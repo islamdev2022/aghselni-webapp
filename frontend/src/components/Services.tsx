@@ -7,13 +7,13 @@ const Services = () => {
       title: "Interior Wash",
       description: "Interior vacuum, dashboard cleaning, and window washing.",
       price: "500DA",
-      image: "public/22314.jpg"
+      image: "/22314.jpg"
     },
     {
       title: "Exterior Wash",
-      description: "Exterior wash, tire cleaning, and waxing.",
+      description: "Exterior wash, tire cleaning, and waxing. Perfect for a quick clean.",
       price: "500DA",
-      image: "public/333.jpg"
+      image: "/333.jpg"
     },
     {
       title: "Full Car Wash",
@@ -51,11 +51,11 @@ const Services = () => {
                 <p className="text-2xl font-bold">{service.price}</p>
               </CardContent>
               <CardFooter>
-                {/* <Link to="/booking" className="w-full">
-                  <Button className="w-full bg-cyan-600 hover:bg-cyan-700">
+                <Link to="/booking" className="w-full">
+                  <Button className="w-full bg-cyan-600 hover:bg-cyan-700 cursor-pointer">
                     Book Now
                   </Button>
-                </Link> */}
+                </Link>
               </CardFooter>
             </Card>
           ))}

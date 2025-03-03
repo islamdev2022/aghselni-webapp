@@ -1,21 +1,23 @@
-import Navbar from './components/Navbar';
-import Hero from './components/Hero';
-import HowItWorks from './components/HowItWorks';
-import Services from './components/Services';
- // Ensure the file './components/Testimonials.tsx' exists
-import Testimonials from './components/Testmonials';
-import Footer from './components/Footer';
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
+import LandingPage from "./components/LandingPage";
+import Booking from "./components/Booking";
 function App() {
   return (
-    <div className="min-h-screen scroll-smooth">
-      <Navbar />
-      <main>
-        <Hero />
-        <HowItWorks />
-        <Services />
-        <Testimonials />
-      </main>
-      <Footer />
+    <div className="flex flex-col min-h-screen">
+      <Router>
+        <Navbar />
+        <main className="flex-grow">
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/booking" element={<Booking></Booking>} />
+            <Route path="/history" element={<p>Client History</p>}></Route>
+            <Route path="*" element={<p>Not found</p>} />
+          </Routes>
+        </main>
+        <Footer />
+      </Router>
     </div>
   );
 }

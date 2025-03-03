@@ -7,7 +7,7 @@ const Footer = () => {
         <div className="grid md:grid-cols-4 gap-8">
           {/* Company Info */}
           <div className="col-span-1 md:col-span-1">
-            <h3 className="text-xl font-bold mb-6 pb-2 border-b-2 border-cyan-400 inline-block">SparkleWash</h3>
+            <h3 className="text-xl font-bold mb-6 pb-2 border-b-2 border-cyan-400 inline-block">Aghselni</h3>
             <p className="mb-4 opacity-80">We bring professional car washing services to your doorstep. Save time and enjoy a spotless vehicle without leaving your home.</p>
             <div className="flex space-x-4 mt-6">
               <a href="#" className="w-10 h-10 rounded-full bg-opacity-10 flex items-center justify-center hover:bg-cyan-400 transition-colors">
@@ -53,16 +53,16 @@ const Footer = () => {
           <div>
             <h3 className="text-xl font-bold mb-6 pb-2 border-b-2 border-cyan-400 inline-block">Contact Us</h3>
             <ul className="space-y-3">
-              <li className="opacity-80">123 Main Street, City</li>
+              <li className="opacity-80">Jijel Algeria</li>
               <li className="opacity-80">Phone: (123) 456-7890</li>
-              <li className="opacity-80">Email: info@sparklewash.com</li>
-              <li className="opacity-80">Hours: Mon-Sat, 8am-8pm</li>
+              <li className="opacity-80">Email: contact@aghselni.com</li>
+              <li className="opacity-80">24h / 7d</li>
             </ul>
           </div>
         </div>
 
         <div className="mt-16 pt-8 border-t border-white border-opacity-10 text-center opacity-70">
-          <p>&copy; {new Date().getFullYear()} SparkleWash. All Rights Reserved.</p>
+          <p>&copy; {new Date().getFullYear()} Aghselni. All Rights Reserved.</p>
         </div>
       </div>
     </footer>

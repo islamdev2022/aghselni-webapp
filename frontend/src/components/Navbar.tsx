@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-
+import { Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
-    <header className="fixed w-full bg-white shadow-md z-50">
+    <header className=" sticky top-0 w-full bg-white shadow-md z-50">
       <div className="container mx-auto px-4 py-4">
         <nav className="flex items-center justify-between">
           <div className="flex items-center">
@@ -16,7 +17,7 @@ const Navbar = () => {
 
           {/* Desktop Navigation */}
           <ul className="hidden md:flex space-x-8">
-            <li><a href="#home" className="text-gray-700 hover:text-cyan-600 font-medium duration-200">Home</a></li>
+            <li><Link to="/" className="text-gray-700 hover:text-cyan-600 font-medium duration-200">Home</Link></li>
             <li><a href="#services" className="text-gray-700 hover:text-cyan-600 font-medium duration-200">Services</a></li>
             <li><a href="#how-it-works" className="text-gray-700 hover:text-cyan-600 font-medium duration-200">How It Works</a></li>
             <li><a href="#testimonials" className="text-gray-700 hover:text-cyan-600 font-medium duration-200">Testimonials</a></li>

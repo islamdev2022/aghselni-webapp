@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Link } from "react-router"
 const Hero = () => {
   return (
-    <section id="home" className="pt-24 bg-gradient-to-r from-cyan-200 to-cyan-600 text-white">
+    <section id="home" className=" bg-gradient-to-r from-cyan-200 to-cyan-600 text-white">
       <div className="container mx-auto px-4 py-16">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div>
@@ -12,11 +12,11 @@ const Hero = () => {
             <p className="text-lg mb-8 opacity-90">
               We bring the car wash to your doorstep. Professional cleaning services at the touch of a button.
             </p>
-            {/* <Link to="/booking">
-              <Button className="bg-white text-cyan-600 hover:bg-gray-100 shadow-lg text-lg py-6 px-8 rounded-full font-semibold">
+            <Link to="/booking">
+              <Button className="bg-white text-cyan-600 hover:bg-gray-100 shadow-lg text-lg py-6 px-8 rounded-full font-semibold cursor-pointer">
                 Book Your Wash
               </Button>
-            </Link> */}
+            </Link>
 
             <div className="grid grid-cols-3 gap-4 mt-12 text-cyan-500">
               <div className="bg-white bg-opacity-20 backdrop-blur-sm p-4 rounded-lg text-center shadow-2xl ">
@@ -38,7 +38,7 @@ const Hero = () => {
           </div>
           <div className="relative">
             <img 
-              src="/public/16276546_5741939.svg" 
+              src="/16276546_5741939.svg" 
               alt="Mobile car wash service"
               className="rounded-xl shadow-2xl h-full w-full object-cover"
               onError={(e) => {
