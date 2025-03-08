@@ -2,14 +2,14 @@ import { Facebook, Twitter, Instagram, Linkedin } from 'lucide-react';
 
 const Footer = () => {
   return (
-    <footer className="bg-cyan-800 text-white pt-16 pb-8">
+    <footer className="bg-cyan-800 text-white pt-16 pb-8 text-center">
       <div className="container mx-auto px-4">
         <div className="grid md:grid-cols-4 gap-8">
           {/* Company Info */}
           <div className="col-span-1 md:col-span-1">
             <h3 className="text-xl font-bold mb-6 pb-2 border-b-2 border-cyan-400 inline-block">Aghselni</h3>
             <p className="mb-4 opacity-80">We bring professional car washing services to your doorstep. Save time and enjoy a spotless vehicle without leaving your home.</p>
-            <div className="flex space-x-4 mt-6">
+            <div className="flex space-x-4 mt-6 justify-center">
               <a href="#" className="w-10 h-10 rounded-full bg-opacity-10 flex items-center justify-center hover:bg-cyan-400 transition-colors">
                 <Facebook size={20} />
               </a>
