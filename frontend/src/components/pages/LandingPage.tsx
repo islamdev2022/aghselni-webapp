@@ -1,7 +1,7 @@
-import Hero from "./Hero";
-import HowItWorks from "./HowItWorks";
-import Services from "./Services";
-import Testimonials from "./Testmonials";
+import Hero from "../Hero";
+import HowItWorks from "../HowItWorks";
+import Services from "../Services";
+import Testimonials from "../Testmonials";
 
 const LandingPage = () => {
   return (

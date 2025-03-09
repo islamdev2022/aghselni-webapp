@@ -9,7 +9,7 @@ import api from "../api"
 import { ACCESS_TOKEN, REFRESH_TOKEN } from "../constants"
 import { Button } from "./ui/button"
 import { AtSign, Lock, LogIn } from "lucide-react"
-
+import { useParams } from "react-router-dom";
 interface LoginFormData {
   email: string
   password: string
@@ -18,6 +18,7 @@ interface LoginFormData {
 interface LoginResponse {
   access: string
   refresh: string
+  user_type: string
 }
 
 const Login = () => {
@@ -29,16 +30,31 @@ const Login = () => {
 
   const navigate = useNavigate()
 
+  const { userType } = useParams<{ userType: string }>();
+console.log(userType)
   // Define the login mutation
   const loginMutation = useMutation({
     mutationFn: async (data: LoginFormData) => {
-      const response = await api.post<LoginResponse>("/api/auth/client/login/", data)
+      const response = await api.post<LoginResponse>(`/api/auth/${userType}/login/`, data)
       return response.data
     },
     onSuccess: (data) => {
       localStorage.setItem(ACCESS_TOKEN, data.access)
       localStorage.setItem(REFRESH_TOKEN, data.refresh)
-      navigate("/")
+      if (data.user_type === "client") 
+      {
+        navigate("/")
+      }else if (data.user_type === "extern_employee")
+      {
+        navigate("/extern-employee")
+      } else if (data.user_type === "intern_employee")
+      {
+        navigate("/intern-employee")
+      }
+      else if (data.user_type === "manager")
+      {
+        navigate("/admin")
+      }
     },
     onError: (error) => {
       console.error("Login error:", error)
@@ -102,7 +118,7 @@ const Login = () => {
             </div>
           </div>
           <h1 className="text-center text-2xl font-bold">
-            Welcome back to <span className="font-extrabold">Aghselni</span>
+          Hello {userType?.toLocaleUpperCase()} <br /> Welcome back to <span className="font-extrabold">Aghselni</span>
           </h1>
           <p className="mt-1 text-center text-cyan-100">Log in to your account</p>
         </div>
@@ -187,7 +203,7 @@ const Login = () => {
             <div className="pt-2">
               <Button
                 type="submit"
-                className="w-full rounded-lg bg-gradient-to-r from-cyan-600 to-cyan-500 py-2.5 text-sm font-medium text-white shadow-md transition hover:from-cyan-700 hover:to-cyan-600 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 disabled:opacity-70"
+                className=" cursor-pointer w-full rounded-lg bg-gradient-to-r from-cyan-600 to-cyan-500 py-2.5 text-sm font-medium text-white shadow-md transition hover:from-cyan-700 hover:to-cyan-600 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 disabled:opacity-70"
                 onClick={handleSubmit}
                 disabled={loginMutation.isPending}
               >

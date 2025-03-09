@@ -1,27 +1,40 @@
 import { useState, useEffect } from 'react';
 import { Menu, X, User, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import api from '../api';
-
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface User {
-  id: any;
+  id: string | number;
+  user_type?: string;
+  user_id?: string | number;
 }
+
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
+  // Use query key for user data
+  const USER_QUERY_KEY = 'userData';
+
+  // Check authentication with proper error handling
   useEffect(() => {
     const checkAuth = async () => {
       try {
         setIsLoading(true);
         const response = await api.get('/api/client/dashboard/');
         setUser(response.data);
-      } catch (error) {
-        console.error('Authentication check failed:', error);
-        // If request fails, user is not logged in or there's an error
+        // Cache the user data
+        queryClient.setQueryData([USER_QUERY_KEY], response.data);
+      } catch (error: any) {
+        // Handle 403 silently without console error
+        if (error.response && error.response.status !== 403) {
+          console.error('Authentication check failed:', error);
+        }
         setUser(null);
       } finally {
         setIsLoading(false);
@@ -29,18 +42,35 @@ const Navbar = () => {
     };
 
     checkAuth();
-  }, []);
+  }, [queryClient]);
 
-  const handleLogout = async () => {
-    try {
-      // You might need to adjust this endpoint based on your backend implementation
-      await api.post('/api/auth/logout/');
+  // Use mutation for logout
+  const logoutMutation = useMutation({
+    mutationFn: async () => {
+      const response = await api.post('/api/auth/logout/');
+      return response.data;
+    },
+    onSuccess: () => {
+      // Clear user data from cache
+      queryClient.invalidateQueries({ queryKey: [USER_QUERY_KEY] });
+      // Clear tokens
+      localStorage.removeItem('access');
+      localStorage.removeItem('refresh');
       setUser(null);
-      // Optionally redirect to home page
-      window.location.href = '/';
-    } catch (error) {
+      // Redirect to home page
+      navigate('/');
+    },
+    onError: (error) => {
       console.error('Logout failed:', error);
     }
+  });
+
+  const handleLogout = () => {
+    // logoutMutation.mutate();
+    localStorage.removeItem('access');
+    localStorage.removeItem('refresh');
+    setUser(null);
+    window.location.href = '/';
   };
 
   const scrollUp = () => {
@@ -48,8 +78,8 @@ const Navbar = () => {
       top: 0,
       behavior: "smooth",
     });
-  };
-
+  }
+console.log(user?.user_id);
   // Authentication buttons based on login status
   const AuthButtons = () => {
     if (isLoading) {
@@ -59,18 +89,19 @@ const Navbar = () => {
     if (user) {
       return (
         <div className="flex items-center space-x-4">
-          <Link to="/profile">
-            <Button className="flex items-center space-x-2 bg-white text-cyan-600 hover:bg-slate-100 shadow">
+          <Link to={`/profile/${user?.user_id}`}>
+            <Button className="flex items-center space-x-2 bg-white text-cyan-600 hover:bg-slate-100 shadow cursor-pointer">
               <User size={18} />
-              <span>{user.id || 'Profile'}</span>
+              <span>{user?.user_id || 'Profile'}</span>
             </Button>
           </Link>
           <Button 
             onClick={handleLogout} 
-            className="flex items-center space-x-2 bg-cyan-600 hover:bg-cyan-700"
+            className="flex items-center space-x-2 bg-cyan-600 hover:bg-cyan-700 cursor-pointer"
+            disabled={logoutMutation.isPending}
           >
             <LogOut size={18} />
-            <span>Logout</span>
+            <span>{logoutMutation.isPending ? 'Logging out...' : 'Logout'}</span>
           </Button>
         </div>
       );
@@ -78,7 +109,7 @@ const Navbar = () => {
 
     return (
       <>
-        <Link to="/login">
+        <Link to="/login/client">
           <Button className="bg-cyan-600 hover:bg-cyan-700 cursor-pointer">
             Sign In
           </Button>
@@ -102,20 +133,21 @@ const Navbar = () => {
       return (
         <>
           <li>
-            <Link to="/profile">
-              <Button className="w-full flex justify-center items-center space-x-2 bg-white text-cyan-600 hover:bg-slate-100 shadow">
+            <Link to={`/profile/${user?.user_id || user?.id}`}>
+              <Button className="w-full flex justify-center items-center space-x-2 bg-white text-cyan-600 hover:bg-slate-100 shadow cursor-pointer">
                 <User size={18} />
-                <span>{user.id || 'Profile'}</span>
+                <span>{user.user_id || 'Profile'}</span>
               </Button>
             </Link>
           </li>
           <li>
             <Button 
               onClick={handleLogout} 
-              className="w-full flex justify-center items-center space-x-2 bg-cyan-600 hover:bg-cyan-700"
+              className="w-full flex justify-center items-center space-x-2 bg-cyan-600 hover:bg-cyan-700 cursor-pointer"
+              disabled={logoutMutation.isPending}
             >
               <LogOut size={18} />
-              <span>Logout</span>
+              <span>{logoutMutation.isPending ? 'Logging out...' : 'Logout'}</span>
             </Button>
           </li>
         </>
@@ -125,7 +157,7 @@ const Navbar = () => {
     return (
       <>
         <li>
-          <Link to="/login">
+          <Link to="/login/client">
             <Button className="w-full bg-cyan-600 hover:bg-cyan-700 cursor-pointer">
               Sign In
             </Button>

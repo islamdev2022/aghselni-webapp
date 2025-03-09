@@ -4,7 +4,11 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 // Lazy load components
-const LandingPage = lazy(() => import("./components/LandingPage"));
+const LandingPage = lazy(() => import("./components/pages/LandingPage"));
+const ExternEmp = lazy(() => import("./components/pages/ExternEmp"));
+const InternEmp = lazy(() => import("./components/pages/InternEmp"));
+const Admin = lazy(() => import("./components/pages/Admin"));
+import Profile from "./components/Profile";
 const Booking = lazy(() => import("./components/Booking"));
 const Login = lazy(() => import("./components/Login"));
 const Signup = lazy(() => import("./components/SignUp"));
@@ -36,7 +40,6 @@ const Layout = ({ children }: { children: ReactNode }) => {
   );
 };
 
-
 // Create a QueryClient instance
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -57,7 +60,11 @@ function App() {
           <Suspense fallback={<LoadingFallback />}>
             <Routes>
               <Route path="/" element={<LandingPage />} />
-              <Route path="/login" element={<Login />} />
+              <Route path="/extern-employee" element={<ExternEmp />} />
+              <Route path="/intern-employee" element={<InternEmp />} />
+              <Route path="/admin" element={<Admin />} />
+              <Route path="/profile/:id" element={<Profile />} />
+              <Route path="/login/:userType" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
               <Route path="/booking" element={<Booking />} />
               <Route path="/history" element={<p>Client History</p>} />
