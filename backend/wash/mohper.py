@@ -11,3 +11,8 @@ class IsExternEmployee(BasePermission):
 class IsInternEmployee(BasePermission):
     def has_permission(self, request, view):
         return hasattr(request.user, 'user_type') and request.user.user_type == 'intern_employee'
+    
+
+class IsAdmin(BasePermission):
+    def has_permission(self, request, view):
+        return hasattr(request.user, 'user_type') and request.user.user_type == 'admin'

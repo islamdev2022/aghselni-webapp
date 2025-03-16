@@ -1,8 +1,22 @@
 from rest_framework import serializers
-from .models import Client, ExternEmployee, InternEmployee
 import re
 from django.contrib.auth import authenticate
+from django.contrib.auth.hashers import make_password
 from rest_framework_simplejwt.settings import api_settings
+from .models import (
+    Client, 
+    ExternEmployee, 
+    InternEmployee, 
+    AppointmentDomicile, 
+    AppointmentLocation,
+    ExternEmployeeHistory,
+    InternEmployeeHistory,
+    Admin
+)
+
+
+
+
 
 # دالة للتحقق من قوة كلمة المرور
 def validate_password(password):
@@ -74,3 +88,111 @@ class InternEmployeeSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         return InternEmployee.objects.create(**validated_data)
 
+# Add these to your serializers.py file
+from .models import ExternEmployeeHistory, InternEmployeeHistory, AppointmentDomicile, AppointmentLocation
+
+# Serializer for extern employee detailed information
+class ExternEmployeeDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ExternEmployee
+        fields = ['id', 'full_name', 'phone', 'age', 'final_rating', 'email']
+
+# Serializer for appointment domicile information
+class AppointmentDomicileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AppointmentDomicile
+        fields = ['id', 'time', 'car_type', 'car_name', 'wash_type', 'place', 'price', 'status']
+
+# Serializer for extern employee history
+class ExternEmployeeHistorySerializer(serializers.ModelSerializer):
+    client_name = serializers.CharField(source='client.full_name', read_only=True)
+    appointment_details = AppointmentDomicileSerializer(source='appointment', read_only=True)
+    
+    class Meta:
+        model = ExternEmployeeHistory
+        fields = ['id', 'client_name', 'cars_washed', 'appointment_details']
+
+# Serializer for intern employee detailed information
+class InternEmployeeDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = InternEmployee
+        fields = ['id', 'full_name', 'phone', 'email']
+
+# Serializer for appointment location information
+class AppointmentLocationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AppointmentLocation
+        fields = ['id', 'date', 'time', 'car_type', 'car_name', 'wash_type', 'price', 'status']
+
+# Serializer for intern employee history
+class InternEmployeeHistorySerializer(serializers.ModelSerializer):
+    client_name = serializers.CharField(source='client.full_name', read_only=True)
+    appointment_details = AppointmentLocationSerializer(source='appointment', read_only=True)
+    
+    class Meta:
+        model = InternEmployeeHistory
+        fields = ['id', 'client_name', 'cars_washed', 'appointment_details']
+        
+
+
+
+
+
+# Add these to your serializers.py file
+
+# Client detail serializer
+class ClientDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Client
+        fields = ['id', 'full_name', 'email', 'phone', 'age']
+
+# Appointment Domicile serializer with client information
+class AppointmentDomicileWithClientSerializer(serializers.ModelSerializer):
+    client_info = ClientDetailSerializer(source='client', read_only=True)
+    
+    class Meta:
+        model = AppointmentDomicile
+        fields = ['id', 'time', 'car_type', 'car_name', 'wash_type', 'place', 'price', 'status', 'client_info']
+
+# Appointment Location serializer with client information
+class AppointmentLocationWithClientSerializer(serializers.ModelSerializer):
+    client_info = ClientDetailSerializer(source='client', read_only=True)
+    
+    class Meta:
+        model = AppointmentLocation
+        fields = ['id', 'date', 'time', 'car_type', 'car_name', 'wash_type', 'price', 'status', 'client_info']
+
+# Serializer for creating a new appointment domicile
+class CreateAppointmentDomicileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AppointmentDomicile
+        fields = ['time', 'car_type', 'car_name', 'wash_type', 'place', 'price', 'client']
+        
+    def create(self, validated_data):
+        # Set default status to 'Pending'
+        validated_data['status'] = 'Pending'
+        return super().create(validated_data)
+
+# Serializer for creating a new appointment location
+class CreateAppointmentLocationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AppointmentLocation
+        fields = ['date', 'time', 'car_type', 'car_name', 'wash_type', 'price', 'client']
+        
+    def create(self, validated_data):
+        # Set default status to 'Pending'
+        validated_data['status'] = 'Pending'
+        return super().create(validated_data)
+
+
+class AdminSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, validators=[validate_password])
+    email = serializers.EmailField(validators=[validate_email])
+
+    class Meta:
+        model = Admin
+        fields = ['id', 'full_name', 'email', 'password']
+
+    def create(self, validated_data):
+        validated_data['password'] = make_password(validated_data['password'])
+        return Admin.objects.create(**validated_data)

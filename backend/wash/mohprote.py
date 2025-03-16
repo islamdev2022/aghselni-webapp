@@ -2,8 +2,8 @@ from rest_framework.decorators import api_view, permission_classes, authenticati
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from .authoo import CustomJWTAuthentication
-from .mohper import IsClient, IsExternEmployee, IsInternEmployee
 
+from .mohper import IsClient, IsExternEmployee, IsInternEmployee, IsAdmin
 @api_view(['GET'])
 @authentication_classes([CustomJWTAuthentication])
 @permission_classes([IsAuthenticated])
@@ -46,3 +46,13 @@ def intern_employee_only_view(request):
     Endpoint accessible only by internal employees
     """
     return Response({"message": "You are authenticated as an internal employee", "user_id": request.user.id})
+
+
+@api_view(['GET'])
+@authentication_classes([CustomJWTAuthentication])
+@permission_classes([IsAdmin])
+def admin_only_view(request):
+    """
+    Endpoint accessible only by admins
+    """
+    return Response({"message": "You are authenticated as an admin", "user_id": request.user.id})

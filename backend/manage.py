@@ -20,5 +20,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-## 2. Create a new Django project to test git
