@@ -5,7 +5,7 @@ import Footer from "./components/Footer";
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ACCESS_TOKEN } from "./constants";
 import api from "./api";
-
+import {ClientProvider} from "./contexts/clientContext";
 // Lazy load components
 const LandingPage = lazy(() => import("./components/pages/LandingPage"));
 const ExternEmp = lazy(() => import("./components/pages/ExternEmp"));
@@ -148,6 +148,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <div className="flex flex-col min-h-screen">
+      <ClientProvider>
         <Router>
           <Layout>
             <Suspense fallback={<LoadingFallback />}>
@@ -158,11 +159,15 @@ function App() {
                 <Route path="/signup" element={<Signup />} />
                 
                 {/* Client Routes */}
+                
                 <Route element={<ProtectedRoute userType="client" />}>
+                
                   <Route path="/booking" element={<Booking />} />
                   <Route path="/profile/client/:id" element={<Profile />} />
                   <Route path="/history/:id" element={<p>Client History</p>} />
+                
                 </Route>
+                
                 
                 {/* External Employee Routes */}
                 <Route element={<ProtectedRoute userType="extern_employee" />}>
@@ -190,9 +195,10 @@ function App() {
                 {/* Not Found Route */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
+              
             </Suspense>
           </Layout>
-        </Router>
+        </Router></ClientProvider>
       </div>
     </QueryClientProvider>
   );

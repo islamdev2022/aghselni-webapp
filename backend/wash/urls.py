@@ -17,7 +17,8 @@ from .views import (
     get_client_for_appointment_domicile,
     get_client_for_appointment_location,
     get_update_appointment_domicile,
-    get_update_appointment_location
+    get_update_appointment_location,
+    create_appointment_domicile
 )
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
@@ -64,8 +65,11 @@ urlpatterns = [
    # path('appointment_location/<int:appointment_id>/client/', get_client_for_appointment_location, name='get_client_for_appointment_location'),
     
     # Get and update appointments
-    path('appointments_domicile/', get_update_appointment_domicile, name='get_all_appointments_domicile'),
+    path('appointments_domicile/get', get_update_appointment_domicile, name='get_all_appointments_domicile'),
     path('appointments_domicile/<int:appointment_id>/', get_update_appointment_domicile, name='update_appointment_domicile'),
-    path('appointments_location/', get_update_appointment_location, name='get_all_appointments_location'),
+    path('appointments_location/get', get_update_appointment_location, name='get_all_appointments_location'),
     path('appointments_location/<int:appointment_id>/', get_update_appointment_location, name='update_appointment_location'),
+    
+    #create appointment
+    path('appointments_domicile/create',create_appointment_domicile , name='create_appointment_domicile'),
 ]

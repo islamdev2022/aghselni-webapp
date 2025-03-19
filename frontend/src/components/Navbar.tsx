@@ -4,19 +4,29 @@ import { Button } from '@/components/ui/button';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../api';
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-
-interface User {
-  id: string | number;
-  user_type?: string;
-  user_id?: string | number;
+import UserDropdown from './UserDropdown';
+import { useClient } from '@/contexts/clientContext';
+interface UserData {
+  id: number
+  full_name: string
+  email: string
+  user_type: string
+}
+interface ClientDashboardData {
+  message: string
+  user_id: number
 }
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
+  const [client, setClient] = useState<ClientDashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+
+
+  // Get user data from context
+  const { Client: userData } = useClient();
 
   // Use query key for user data
   const USER_QUERY_KEY = 'userData';
@@ -27,15 +37,25 @@ const Navbar = () => {
       try {
         setIsLoading(true);
         const response = await api.get('/api/client/dashboard/');
-        setUser(response.data);
+        setClient(response.data);
         // Cache the user data
         queryClient.setQueryData([USER_QUERY_KEY], response.data);
       } catch (error: any) {
         // Handle 403 silently without console error
-        if (error.response && error.response.status !== 403) {
-          console.error('Authentication check failed:', error);
+        if (error.response) {
+          // Server responded with a status outside the 2xx range
+          if (error.response.status !== 403) {
+            console.error('API request failed:', error.response.data);
+          } else {
+          }
+        } else if (error.request) {
+          // Request was made but no response received
+          console.error('No response received:', error.request);
+        } else {
+          // Error setting up the request
+          console.error('Error setting up request:', error.message);
         }
-        setUser(null);
+        setClient(null);
       } finally {
         setIsLoading(false);
       }
@@ -56,7 +76,7 @@ const Navbar = () => {
       // Clear tokens
       localStorage.removeItem('access');
       localStorage.removeItem('refresh');
-      setUser(null);
+      setClient(null);
       // Redirect to home page
       navigate('/');
     },
@@ -69,7 +89,7 @@ const Navbar = () => {
     // logoutMutation.mutate();
     localStorage.removeItem('access');
     localStorage.removeItem('refresh');
-    setUser(null);
+    setClient(null);
     window.location.href = '/';
   };
 
@@ -79,30 +99,22 @@ const Navbar = () => {
       behavior: "smooth",
     });
   }
-console.log(user?.user_id);
+console.log(userData);
+console.log(client)
   // Authentication buttons based on login status
   const AuthButtons = () => {
     if (isLoading) {
       return <div className="h-10 w-32 bg-gray-200 animate-pulse rounded"></div>;
     }
 
-    if (user) {
+    if (userData) {
       return (
         <div className="flex items-center space-x-4">
-          <Link to={`/profile/client/${user?.user_id}`}>
-            <Button className="flex items-center space-x-2 bg-white text-cyan-600 hover:bg-slate-100 shadow cursor-pointer">
-              <User size={18} />
-              <span>{user?.user_id || 'Profile'}</span>
-            </Button>
-          </Link>
-          <Button 
-            onClick={handleLogout} 
-            className="flex items-center space-x-2 bg-cyan-600 hover:bg-cyan-700 cursor-pointer"
-            disabled={logoutMutation.isPending}
-          >
-            <LogOut size={18} />
-            <span>{logoutMutation.isPending ? 'Logging out...' : 'Logout'}</span>
-          </Button>
+      <UserDropdown 
+        userData={userData} 
+        handleLogout={handleLogout} 
+        logoutMutation={logoutMutation} 
+      />
         </div>
       );
     }
@@ -129,14 +141,14 @@ console.log(user?.user_id);
       return <div className="h-10 bg-gray-200 animate-pulse rounded my-4"></div>;
     }
 
-    if (user) {
+    if (userData) {
       return (
         <>
           <li>
-            <Link to={`/profile/${user?.user_id || user?.id}`}>
+            <Link to={`/profile/${ userData?.id}`}>
               <Button className="w-full flex justify-center items-center space-x-2 bg-white text-cyan-600 hover:bg-slate-100 shadow cursor-pointer">
                 <User size={18} />
-                <span>{user.user_id || 'Profile'}</span>
+                <span>{userData.id || 'Profile'}</span>
               </Button>
             </Link>
           </li>

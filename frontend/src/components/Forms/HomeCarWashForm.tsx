@@ -11,29 +11,35 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useClient } from "@/contexts/clientContext";
+import { useMutation } from "@tanstack/react-query";
+import api from "@/api";
+// import { useToast } from "@/components/ui/use-toast";
 
 // Define interface for form data
 interface HomeCarWashFormData {
-  fullName: string;
-  phoneNumber: string;
-  email: string;
-  carType: string;
-  carModel: string;
-  washType: "interior" | "exterior" | "full";
-  address: string;
-  timeSlot: string;
+  carType: string;      // maps to car_type
+  carModel: string;     // maps to car_name
+  washType: string;     // maps to wash_type
+  address: string;      // maps to place
+  timeSlot: string;     // maps to time
   date: Date | undefined;
-  price: number;
+  price: number;        // maps to price
   notes: string;
   paymentMethod: string;
+  status?: string;      // maps to status with default 'Pending'
 }
 
-// Mock user data that would normally come from your auth system
-// const mockUserData = {
-//   fullName: "John Doe",
-//   phoneNumber: "+212 612345678",
-//   email: "john.doe@example.com",
-// };
+// API request payload interface
+interface AppointmentDomicilePayload {
+  car_type: string;
+  car_name: string;
+  wash_type: string;
+  place: string;
+  time: string;
+  price: number;
+  status?: string;
+}
 
 // Price calculation constants
 const BASE_PRICES = {
@@ -54,14 +60,12 @@ const TIME_SLOTS = [
 ];
 
 export default function HomeCarWashForm() {
+  // Call the client context
+  const { Client } = useClient();
+  // const { toast } = useToast();
+
   // Initialize form data with user details
   const [formData, setFormData] = useState<HomeCarWashFormData>({
-    // fullName: mockUserData.fullName,
-    // phoneNumber: mockUserData.phoneNumber,
-    // email: mockUserData.email,
-    fullName: "",
-    phoneNumber: "",
-    email: "",
     carType: "",
     carModel: "",
     washType: "full",
@@ -70,7 +74,7 @@ export default function HomeCarWashForm() {
     date: undefined,
     price: 0,
     notes: "",
-    paymentMethod: "cash",
+    paymentMethod: "cash"
   });
 
   // Calculate price whenever car type or wash type changes
@@ -80,7 +84,7 @@ export default function HomeCarWashForm() {
       if (carPrices) {
         setFormData((prev) => ({
           ...prev,
-          price: carPrices[formData.washType],
+          price: carPrices[formData.washType as keyof typeof carPrices],
         }));
       }
     }
@@ -106,7 +110,7 @@ export default function HomeCarWashForm() {
   };
 
   // Handle radio group changes
-  const handleRadioChange = (value: "interior" | "exterior" | "full") => {
+  const handleRadioChange = (value: string) => {
     setFormData((prev) => ({
       ...prev,
       washType: value,
@@ -121,17 +125,68 @@ export default function HomeCarWashForm() {
     }));
   };
 
+  // Create mutation for post request
+  const createAppointment = useMutation({
+    mutationFn: async (data: AppointmentDomicilePayload) => {
+      const response = await api.post('/api/appointments_domicile/create', data);
+      return response.data;
+    },
+    onSuccess: () => {
+      alert("Appointment created successfully");
+      // Reset form or redirect
+      resetForm();
+    },
+    onError: (error) => {
+      console.error("Appointment error:", error);
+      alert(error);
+    }
+  });
+
+  // Reset form to initial state
+  const resetForm = () => {
+    setFormData({
+      carType: "",
+      carModel: "",
+      washType: "full",
+      address: "",
+      timeSlot: "",
+      date: undefined,
+      price: 0,
+      notes: "",
+      paymentMethod: "cash",
+    });
+  };
+
   // Handle form submission
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Submitting form data:", formData);
-    // Here you would typically send the data to your backend
-    alert("Form submitted successfully!");
-    // You could also reset the form or redirect the user
+    
+    // Input validation
+    if (!formData.carType || !formData.carModel || !formData.address || !formData.timeSlot || !formData.date) {
+      alert("Please fill all required fields");
+      return;
+    }
+    
+    // Format time from timeSlot (e.g., "08:00 - 10:00" -> "08:00")
+    const time = formData.timeSlot.split(" - ")[0];
+    
+    // Format date and time for the API
+    const payload: AppointmentDomicilePayload = {
+      car_type: formData.carType,
+      car_name: formData.carModel,
+      wash_type: formData.washType,
+      place: formData.address,
+      time: time, // Send only the start time
+      price: formData.price,
+      status: "Pending"
+    };
+    
+    console.log("Submitting appointment:", payload);
+    createAppointment.mutate(payload);
   };
 
   return (
-    <Card className=" max-w-2xl mx-auto bg-gradient-to-br from-cyan-200 to-cyan-600">
+    <Card className="max-w-2xl mx-auto bg-gradient-to-br from-cyan-200 to-cyan-600">
       <CardHeader className="text-center">
         <CardTitle className="text-2xl font-bold text-white">Aghselni à Domicile</CardTitle>
         <CardDescription className="text-white">
@@ -150,10 +205,9 @@ export default function HomeCarWashForm() {
                 <Input
                   id="fullName"
                   name="fullName"
-                  value={formData.fullName}
-                  onChange={handleChange}
+                  value={Client?.full_name}
                   className="bg-white/90"
-                  // readOnly
+                  readOnly
                 />
               </div>
               
@@ -162,9 +216,9 @@ export default function HomeCarWashForm() {
                 <Input
                   id="phoneNumber"
                   name="phoneNumber"
-                  value={formData.phoneNumber}
-                  onChange={handleChange}
+                  value={Client?.phone}
                   className="bg-white/90"
+                  readOnly
                 />
               </div>
             </div>
@@ -174,9 +228,9 @@ export default function HomeCarWashForm() {
               <Input
                 id="email"
                 name="email"
-                value={formData.email}
+                value={Client?.email}
                 className="bg-white/90"
-                // readOnly
+                readOnly
               />
             </div>
           </div>
@@ -331,7 +385,7 @@ export default function HomeCarWashForm() {
                 />
               </div>
               
-              <div className="space-y-2">
+              {/* <div className="space-y-2">
                 <Label htmlFor="paymentMethod" className="text-white">Payment Method</Label>
                 <Select
                   onValueChange={(value: string) => handleSelectChange("paymentMethod", value)}
@@ -345,13 +399,17 @@ export default function HomeCarWashForm() {
                     <SelectItem value="online">Online Payment</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
+              </div> */}
             </div>
           </div>
 
           {/* Submit Button */}
-          <Button type="submit" className="w-full bg-cyan-800 hover:bg-cyan-900 text-white">
-            Schedule Home Car Wash
+          <Button 
+            type="submit" 
+            className="w-full bg-cyan-800 hover:bg-cyan-900 text-white"
+            disabled={createAppointment.isPending}
+          >
+            {createAppointment.isPending ? "Processing..." : "Schedule Home Car Wash"}
           </Button>
         </form>
       </CardContent>

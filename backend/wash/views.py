@@ -377,7 +377,18 @@ def get_client_for_appointment_location(request, appointment_id):
     except AppointmentLocation.DoesNotExist:
         return Response({"error": "الموعد غير موجود"}, status=status.HTTP_404_NOT_FOUND)
 
-# Get and update all appointments domicile
+# POST appointments domicile
+
+@api_view(['POST'])
+@authentication_classes([CustomJWTAuthentication])
+@permission_classes([IsAuthenticated, IsClient])
+def create_appointment_domicile(request):
+    serializer = CreateAppointmentDomicileSerializer(data=request.data, context={'request': request})
+    if serializer.is_valid():
+        # Set the client as the current user
+        serializer.save(client=Client.objects.get(id=request.user.id))
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 # Get and update all appointments domicile
 @api_view(['GET', 'PUT'])
 @authentication_classes([CustomJWTAuthentication])

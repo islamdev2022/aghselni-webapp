@@ -16,7 +16,6 @@ import {
 } from "lucide-react"
 import api from "@/api"
 import {  useQueryClient } from "@tanstack/react-query";
-
 interface AdminLayoutProps {
   children: React.ReactNode
 }
@@ -56,6 +55,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         // Fetch admin dashboard data
         const adminResponse = await api.get('/api/admin/dashboard/');
         setAdminData(adminResponse.data);
+        console.log(adminData)
         // Cache the admin data
         queryClient.setQueryData([ADMIN_QUERY_KEY], adminResponse.data);
         

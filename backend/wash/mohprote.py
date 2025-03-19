@@ -16,7 +16,10 @@ def get_current_user(request):
         'id': user.id,
         'full_name': user.full_name,
         'email': user.email,
-        'user_type': user.user_type
+        'user_type': user.user_type,
+        'phone': user.phone if hasattr(user, 'phone') else None,
+        'age': user.age if hasattr(user, 'age') else None,
+        
     }
     return Response(user_data)
 
