@@ -36,3 +36,10 @@ class CustomJWTAuthentication(JWTAuthentication):
             return user
         except (Client.DoesNotExist, ExternEmployee.DoesNotExist, InternEmployee.DoesNotExist, Admin.DoesNotExist):
             raise AuthenticationFailed('User not found')
+        
+from rest_framework_simplejwt.tokens import AccessToken
+
+def decode_token(token):
+    access_token = AccessToken(token)
+    print("User ID:", access_token['user_id'])
+    print("User Type:", access_token['user_type'])

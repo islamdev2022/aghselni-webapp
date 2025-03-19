@@ -131,14 +131,17 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
+from .mohper import IsClient
 from rest_framework_simplejwt.tokens import RefreshToken
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsClient])
 def logout_view(request):
     """
     تسجيل خروج المستخدم عن طريق حظر الـ refresh token
     """
+    print(    request.user)
+
     try:
         refresh_token = request.data.get("refresh")  # الحصول على refresh token من الطلب
         if not refresh_token:

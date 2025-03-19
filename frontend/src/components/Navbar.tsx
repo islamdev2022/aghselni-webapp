@@ -89,7 +89,7 @@ console.log(user?.user_id);
     if (user) {
       return (
         <div className="flex items-center space-x-4">
-          <Link to={`/profile/${user?.user_id}`}>
+          <Link to={`/profile/client/${user?.user_id}`}>
             <Button className="flex items-center space-x-2 bg-white text-cyan-600 hover:bg-slate-100 shadow cursor-pointer">
               <User size={18} />
               <span>{user?.user_id || 'Profile'}</span>

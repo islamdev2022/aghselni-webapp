@@ -46,12 +46,12 @@ console.log(userType)
         navigate("/")
       }else if (data.user_type === "extern_employee")
       {
-        navigate("/extern-employee")
+        navigate("/extern_employee")
       } else if (data.user_type === "intern_employee")
       {
-        navigate("/intern-employee")
+        navigate("/intern_employee")
       }
-      else if (data.user_type === "manager")
+      else if (data.user_type === "admin")
       {
         navigate("/admin")
       }

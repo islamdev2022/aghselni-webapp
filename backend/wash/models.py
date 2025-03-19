@@ -44,6 +44,7 @@ class InternEmployee(models.Model):
     profile_image = models.ImageField(upload_to='profile_images/')
     phone = models.CharField(max_length=20)
     email = models.EmailField(unique=True)
+    age = models.IntegerField(default=0)
 
     def __str__(self):
         return self.full_name

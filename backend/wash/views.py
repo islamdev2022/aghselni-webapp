@@ -56,8 +56,13 @@ def register_client(request):
         return Response({"message": "تم تسجيل العميل بنجاح"}, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+from rest_framework.permissions import IsAdminUser
+from rest_framework.permissions import AllowAny
 # تسجيل الموظف الخارجي
 @api_view(['POST'])
+@authentication_classes([CustomJWTAuthentication])
+
+@permission_classes([IsAdminUser])  
 def register_extern_employee(request):
     serializer = ExternEmployeeSerializer(data=request.data)
     if serializer.is_valid():
@@ -65,14 +70,22 @@ def register_extern_employee(request):
         return Response({"message": "تم تسجيل الموظف الخارجي بنجاح"}, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+from django.views.decorators.csrf import csrf_exempt
+
 # تسجيل الموظف الداخلي
 @api_view(['POST'])
+@authentication_classes([CustomJWTAuthentication])
+@permission_classes([IsAdmin])
 def register_intern_employee(request):
+    print("Headers:", request.headers)  # Check if token is received
+    print("User:", request.user)  # Should be a valid user, not AnonymousUser
+
     serializer = InternEmployeeSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save()
         return Response({"message": "تم تسجيل الموظف الداخلي بنجاح"}, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 
@@ -368,7 +381,7 @@ def get_client_for_appointment_location(request, appointment_id):
 # Get and update all appointments domicile
 @api_view(['GET', 'PUT'])
 @authentication_classes([CustomJWTAuthentication])
-@permission_classes([IsAuthenticated, IsExternEmployee])
+@permission_classes([IsAuthenticated])
 def get_update_appointment_domicile(request, appointment_id=None):
     """
     Get all appointments domicile, get a specific appointment, or update a specific one

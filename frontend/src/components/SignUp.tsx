@@ -51,7 +51,7 @@ const SignUp = () => {
         localStorage.setItem(ACCESS_TOKEN, data.access)
         localStorage.setItem(REFRESH_TOKEN, data.refresh)
       }
-      navigate("/login")
+      navigate("/login/client")
     },
     onError: (error) => {
       console.error("Registration error:", error)
@@ -291,7 +291,7 @@ const SignUp = () => {
           <div className="mt-8 text-center">
             <p className="text-sm text-gray-600">
               Already have an account?{" "}
-              <Link to="/login" className="font-medium text-cyan-600 transition hover:text-cyan-700">
+              <Link to="/login/client" className="font-medium text-cyan-600 transition hover:text-cyan-700">
                 Log in here
               </Link>
             </p>

@@ -1,6 +1,6 @@
 from django.urls import path
 from .auth_views import client_login, extern_employee_login, intern_employee_login, admin_login, refresh_token, logout_view
-from .mohprote import get_current_user, client_only_view, extern_employee_only_view, intern_employee_only_view
+from .mohprote import get_current_user, client_only_view, extern_employee_only_view, intern_employee_only_view, admin_only_view
 from .views import (
     register_client, 
     register_extern_employee, 
@@ -19,6 +19,7 @@ from .views import (
     get_update_appointment_domicile,
     get_update_appointment_location
 )
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 urlpatterns = [
     # Auth endpoints
@@ -27,6 +28,7 @@ urlpatterns = [
     path('auth/intern_employee/login/', intern_employee_login, name='intern_employee_login'),
     path('auth/admin/login/', admin_login, name='admin_login'),
     path('auth/refresh/', refresh_token, name='refresh_token'),
+    path('auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     
     # Registration endpoints
     path('auth/client/register/', register_client, name='register_client'),
@@ -39,6 +41,7 @@ urlpatterns = [
     path('client/dashboard/', client_only_view, name='client_only_view'),
     path('extern_employee/dashboard/', extern_employee_only_view, name='extern_employee_only_view'),
     path('intern_employee/dashboard/', intern_employee_only_view, name='intern_employee_only_view'),
+    path('admin/dashboard/', admin_only_view, name='admin_only_view'),
     
     # Employee details endpoints
     path('extern_employee/details/', get_extern_employee_details, name='get_extern_employee_details'),
