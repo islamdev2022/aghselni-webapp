@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, LogOut, Settings } from 'lucide-react';
+import { LogOut, Settings } from 'lucide-react';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 
 interface UserDropdownProps {
@@ -30,8 +30,14 @@ const UserDropdown: React.FC<UserDropdownProps> = ({
     <DropdownMenu.Root>
       <DropdownMenu.Trigger asChild>
         <div className="flex items-center h-10 w-10 rounded-full bg-cyan-600 text-white cursor-pointer hover:bg-cyan-700">
-          <div className="flex items-center justify-center w-full h-full">
-            <User size={18} />
+          <div className="flex items-center justify-center w-full h-full font-semibold text-xl">
+            {/* <User size={18} /> */}
+            <div>
+              {userData?.full_name?.indexOf(' ') !== -1
+                ? userData?.full_name?.split(' ')[0].charAt(0).toUpperCase() 
+                : userData?.full_name?.charAt(0).toUpperCase()
+                }
+            </div>
           </div>
         </div>
       </DropdownMenu.Trigger>

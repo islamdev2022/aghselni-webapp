@@ -6,15 +6,15 @@ import { Search, Plus, Edit, Trash2, UserCog,  Phone } from "lucide-react"
 import  api  from "@/api"
 import AdminLayout from "@/components/layouts/AdminLayout"
 import { Link } from "react-router-dom"
-interface Employee {
-  id: number
-  name: string
-  email: string
-  phone: string
-  type: "intern_employee" | "extern_employee"
-  status: "active" | "inactive"
-  joinDate: string
-}
+// interface Employee {
+//   id: number
+//   name: string
+//   email: string
+//   phone: string
+//   type: "intern_employee" | "extern_employee"
+//   status: "active" | "inactive"
+//   joinDate: string
+// }
 
 export default function EmployeesPage() {
   const [searchTerm, setSearchTerm] = useState("")

@@ -6,12 +6,12 @@ import api from '../api';
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import UserDropdown from './UserDropdown';
 import { useClient } from '@/contexts/clientContext';
-interface UserData {
-  id: number
-  full_name: string
-  email: string
-  user_type: string
-}
+// interface UserData {
+//   id: number
+//   full_name: string
+//   email: string
+//   user_type: string
+// }
 interface ClientDashboardData {
   message: string
   user_id: number
@@ -198,9 +198,9 @@ console.log(client)
           {/* Desktop Navigation */}
           <ul className="hidden md:flex space-x-8">
             <li><Link to="/" className="text-gray-700 hover:text-cyan-600 font-medium duration-200" onClick={scrollUp}>Home</Link></li>
-            <li><a href="#services" className="text-gray-700 hover:text-cyan-600 font-medium duration-200">Services</a></li>
-            <li><a href="#how-it-works" className="text-gray-700 hover:text-cyan-600 font-medium duration-200">How It Works</a></li>
-            <li><a href="#testimonials" className="text-gray-700 hover:text-cyan-600 font-medium duration-200">Testimonials</a></li>
+            <li><a href="/#services" className="text-gray-700 hover:text-cyan-600 font-medium duration-200">Services</a></li>
+            <li><a href="/#how-it-works" className="text-gray-700 hover:text-cyan-600 font-medium duration-200">How It Works</a></li>
+            <li><a href="/#testimonials" className="text-gray-700 hover:text-cyan-600 font-medium duration-200">Testimonials</a></li>
           </ul>
 
           <div className="hidden md:flex space-x-4">

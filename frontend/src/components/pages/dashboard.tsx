@@ -26,11 +26,33 @@ interface DashboardStats {
 }
 
 export default function AdminDashboard() {
-  const { data: stats, isLoading } = useQuery({
+  const { data: stats,  } = useQuery({
     queryKey: ["admin-stats"],
     queryFn: async () => {
       const response = await api.get<DashboardStats>("/api/admin/stats")
       return response.data
+    },
+  })
+
+  const { data: employees, isLoading } = useQuery({
+    queryKey: ["employees"],
+    queryFn: async () => {
+      const internResponse = await api.get("/api/admin/intern_employees/")
+      const externResponse = await api.get("/api/admin/extern_employees/")
+
+      const internEmployees = internResponse.data.map((emp: any) => ({
+        ...emp,
+        type: "intern_employee",
+      }))
+
+      const externEmployees = externResponse.data.map((emp: any) => ({
+        ...emp,
+        type: "extern_employee",
+      }))
+
+      return [
+         ...internEmployees,
+         ...externEmployees]
     },
   })
 
@@ -60,7 +82,7 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard
             title="Total Employees"
-            value={stats?.totalEmployees || 0}
+            value={employees?.length || 0}
             icon={<Users className="h-6 w-6 text-cyan-600" />}
             trend={+5}
             link="/admin/employees"

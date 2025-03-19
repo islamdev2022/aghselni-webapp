@@ -389,6 +389,20 @@ def create_appointment_domicile(request):
         serializer.save(client=Client.objects.get(id=request.user.id))
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+#POST appointements location
+
+@api_view(['POST'])
+@authentication_classes([CustomJWTAuthentication])
+@permission_classes([IsAuthenticated, IsClient])
+def create_appointment_location(request):
+    serializer = CreateAppointmentLocationSerializer(data=request.data, context={'request': request})
+    if serializer.is_valid():
+        # Set the client as the current user
+        serializer.save(client=Client.objects.get(id=request.user.id))
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 # Get and update all appointments domicile
 @api_view(['GET', 'PUT'])
 @authentication_classes([CustomJWTAuthentication])
@@ -452,7 +466,7 @@ def get_update_appointment_domicile(request, appointment_id=None):
 # Get and update all appointments location
 @api_view(['GET', 'PUT'])
 @authentication_classes([CustomJWTAuthentication])
-@permission_classes([IsAuthenticated, IsInternEmployee])
+@permission_classes([IsAuthenticated]) 
 def get_update_appointment_location(request, appointment_id=None):
     """
     Get all appointments location, get a specific appointment, or update a specific one

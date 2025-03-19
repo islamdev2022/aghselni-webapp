@@ -177,7 +177,7 @@ class CreateAppointmentDomicileSerializer(serializers.ModelSerializer):
 class CreateAppointmentLocationSerializer(serializers.ModelSerializer):
     class Meta:
         model = AppointmentLocation
-        fields = ['date', 'time', 'car_type', 'car_name', 'wash_type', 'price', 'client']
+        fields = ['date', 'time', 'car_type', 'car_name', 'wash_type', 'price']
         
     def create(self, validated_data):
         # Set default status to 'Pending'

@@ -1,7 +1,6 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import api from "@/api";
-import { ACCESS_TOKEN } from "@/constants";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {  useQueryClient } from "@tanstack/react-query";
 
 interface ClientContextType {
   Client: ClientData | null;

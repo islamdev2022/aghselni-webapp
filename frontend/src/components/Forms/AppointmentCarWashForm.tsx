@@ -11,15 +11,14 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-
+import { useClient } from "@/contexts/clientContext";
+import { useMutation } from "@tanstack/react-query";
+import api from "@/api";
 // Define interface for form data
 interface AppointmentFormData {
-  fullName: string;
-  phoneNumber: string;
-  email: string;
-  carType: string;
-  carModel: string;
-  washType: "interior" | "exterior" | "full";
+  carType: string;      // maps to car_type
+  carModel: string;     // maps to car_name
+  washType: string;
   timeSlot: string;
   date: Date | undefined;
   price: number;
@@ -27,12 +26,15 @@ interface AppointmentFormData {
   paymentMethod: string;
 }
 
-// Mock user data that would normally come from your auth system
-// const mockUserData = {
-//   fullName: "John Doe",
-//   phoneNumber: "+212 612345678",
-//   email: "john.doe@example.com",
-// };
+interface AppointmentLocationPayload {
+  car_type: string;
+  car_name: string;
+  wash_type: string;
+  date: string;
+  time: string;
+  price: number;
+  // notes: string;
+}
 
 // Price calculation constants
 const BASE_PRICES = {
@@ -56,14 +58,9 @@ const TIME_SLOTS = [
 ];
 
 export default function AppointmentCarWashForm() {
+  const { Client } = useClient();
   // Initialize form data with user details
   const [formData, setFormData] = useState<AppointmentFormData>({
-    // fullName: mockUserData.fullName,
-    // phoneNumber: mockUserData.phoneNumber,
-    // email: mockUserData.email,
-    fullName: "",
-    phoneNumber: "",
-    email: "",
     carType: "",
     carModel: "",
     washType: "full",
@@ -81,7 +78,7 @@ export default function AppointmentCarWashForm() {
       if (carPrices) {
         setFormData((prev) => ({
           ...prev,
-          price: carPrices[formData.washType],
+          price: carPrices[formData.washType as keyof typeof carPrices],
         }));
       }
     }
@@ -107,7 +104,7 @@ export default function AppointmentCarWashForm() {
   };
 
   // Handle radio group changes
-  const handleRadioChange = (value: "interior" | "exterior" | "full") => {
+  const handleRadioChange = (value: string) => {
     setFormData((prev) => ({
       ...prev,
       washType: value,
@@ -122,13 +119,64 @@ export default function AppointmentCarWashForm() {
     }));
   };
 
+  // Create mutation for post request
+  const createAppointment = useMutation({
+    mutationFn: async (data: AppointmentLocationPayload) => {
+      const response = await api.post('/api/appointments_location/create', data);
+      return response.data;
+    },
+    onSuccess: () => {
+      alert("Appointment created successfully");
+      // Reset form or redirect
+      resetForm();
+    },
+    onError: (error) => {
+      console.error("Appointment error:", error);
+      alert(error);
+    }
+  });
+
+  // Reset form to initial state
+  const resetForm = () => {
+    setFormData({
+      carType: "",
+      carModel: "",
+      washType: "full",
+      timeSlot: "",
+      date: undefined,
+      price: 0,
+      notes: "",
+      paymentMethod: "cash",
+    });
+  };
+
   // Handle form submission
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Submitting appointment data:", formData);
-    // Here you would typically send the data to your backend
-    alert("Appointment booked successfully!");
-    // You could also reset the form or redirect the user
+
+    // Input validation
+    if (!formData.carType || !formData.carModel ||  !formData.timeSlot || !formData.date ) {
+      alert("Please fill all required fields");
+      return;
+    }
+
+    const time = formData.timeSlot.split(" - ")[0];
+    // Prepare payload
+    const payload: AppointmentLocationPayload = {
+      car_type: formData.carType,
+      car_name: formData.carModel,
+      wash_type: formData.washType,
+      date: formData.date ? format(formData.date, "yyyy-MM-dd") : "",
+      time: time,
+      price: formData.price,
+      // notes: formData.notes,
+    };
+    console.log("Submitting appointment data:", payload);
+
+
+    
+    // Call the mutation to send the data to your backend
+    createAppointment.mutate(payload);
   };
 
   return (
@@ -144,18 +192,15 @@ export default function AppointmentCarWashForm() {
           {/* Personal Information */}
           <div className="space-y-4">
             <h3 className="text-lg font-medium text-white">Personal Information</h3>
-            
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="fullName" className="text-white">Full Name</Label>
                 <Input
                   id="fullName"
                   name="fullName"
-                  value={formData.fullName}
-                  onChange={handleChange}
-                  placeholder="e.g., John Doe"
+                  value={Client?.full_name}
                   className="bg-white/90"
-                  // readOnly
+                  readOnly
                 />
               </div>
               
@@ -164,10 +209,9 @@ export default function AppointmentCarWashForm() {
                 <Input
                   id="phoneNumber"
                   name="phoneNumber"
-                  value={formData.phoneNumber}
-                  onChange={handleChange}
-                  placeholder="+212 612345678"
+                  value={Client?.phone}
                   className="bg-white/90"
+                  readOnly
                 />
               </div>
             </div>
@@ -177,11 +221,9 @@ export default function AppointmentCarWashForm() {
               <Input
                 id="email"
                 name="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="urname@gmail.com"
+                value={Client?.email}
                 className="bg-white/90"
-                // readOnly
+                readOnly
               />
             </div>
           </div>
@@ -324,7 +366,7 @@ export default function AppointmentCarWashForm() {
                 />
               </div>
               
-              <div className="space-y-2">
+              {/* <div className="space-y-2">
                 <Label htmlFor="paymentMethod" className="text-white">Payment Method</Label>
                 <Select
                   onValueChange={(value: string) => handleSelectChange("paymentMethod", value)}
@@ -338,7 +380,7 @@ export default function AppointmentCarWashForm() {
                     <SelectItem value="online">Online Payment</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
+              </div> */}
             </div>
           </div>
 
