@@ -522,3 +522,68 @@ def register_admin(request):
         serializer.save()
         return Response({"message": "تم تسجيل المسؤول بنجاح"}, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# Get all clients
+@api_view(['GET'])
+@authentication_classes([CustomJWTAuthentication])
+@permission_classes([IsAuthenticated, IsAdmin])
+def get_all_clients(request):
+    """
+    Admin endpoint to get details of all clients
+    """
+    # Get all clients
+    clients = Client.objects.all()
+    
+    # Serialize client data
+    serializer = ClientDetailSerializer(clients, many=True)
+    
+    return Response(serializer.data)
+
+# Get, delete a client
+@api_view(['GET', 'DELETE'])
+@authentication_classes([CustomJWTAuthentication])
+@permission_classes([IsAuthenticated, IsAdmin])
+def get_delete_client(request, pk):
+    """
+    Get or delete a client - admin only
+    """
+    try:
+        client = Client.objects.get(pk=pk)
+        
+        if request.method == 'GET':
+            serializer = ClientDetailSerializer(client)
+            return Response(serializer.data)
+        
+        elif request.method == 'DELETE':
+            client.delete()
+            return Response({"message": "تم حذف العميل بنجاح"}, status=status.HTTP_204_NO_CONTENT)
+            
+    except Client.DoesNotExist:
+        return Response({"error": "العميل غير موجود"}, status=status.HTTP_404_NOT_FOUND)
+
+# Update client profile
+@api_view(['GET', 'PUT'])
+@authentication_classes([CustomJWTAuthentication])
+@permission_classes([IsAuthenticated, IsClient])
+def update_client_profile(request):
+    """
+    Get or update the currently authenticated client's profile
+    """
+    try:
+        # Get the current client
+        client = Client.objects.get(id=request.user.id)
+        
+        if request.method == 'GET':
+            serializer = ClientDetailSerializer(client)
+            return Response(serializer.data)
+        
+        elif request.method == 'PUT':
+            # Use partial=True to allow partial updates
+            serializer = ClientSerializer(client, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({"message": "تم تحديث البيانات بنجاح", "data": serializer.data})
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
+    except Client.DoesNotExist:
+        return Response({"error": "العميل غير موجود"}, status=status.HTTP_404_NOT_FOUND)

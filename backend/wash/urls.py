@@ -19,7 +19,10 @@ from .views import (
     get_update_appointment_domicile,
     get_update_appointment_location,
     create_appointment_domicile,
-    create_appointment_location
+    create_appointment_location,
+    update_client_profile,
+    get_all_clients,
+    get_delete_client
 )
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
@@ -74,4 +77,13 @@ urlpatterns = [
     #create appointment
     path('appointments_domicile/create',create_appointment_domicile , name='create_appointment_domicile'),
     path('appointments_location/create',create_appointment_location , name='create_appointment_location'),
+    
+    
+    #get all clients by admin and delete client by admin
+    
+    path('admin/clients/', get_all_clients, name='get_all_clients'),
+    path('admin/client/<int:pk>/', get_delete_client, name='get_update_delete_client'),
+    
+    # client modify his informations
+    path('client/profile/', update_client_profile, name='update_client_profile'),
 ]

@@ -52,10 +52,11 @@ class ClientSerializer(serializers.ModelSerializer):
     phone = serializers.CharField(validators=[validate_phone])
     email = serializers.EmailField(validators=[validate_email])
     age = serializers.IntegerField(validators=[validate_age])
+    photo = serializers.ImageField(required=False, allow_null=True) #####
 
     class Meta:
         model = Client
-        fields = ['full_name', 'email', 'phone', 'age', 'password']
+        fields = ['full_name', 'email', 'phone', 'age', 'password','photo']######
 
     def create(self, validated_data):
         return Client.objects.create(**validated_data)
@@ -144,7 +145,7 @@ class InternEmployeeHistorySerializer(serializers.ModelSerializer):
 class ClientDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Client
-        fields = ['id', 'full_name', 'email', 'phone', 'age']
+        fields = ['id', 'full_name', 'email', 'phone', 'age','photo']
 
 # Appointment Domicile serializer with client information
 class AppointmentDomicileWithClientSerializer(serializers.ModelSerializer):
