@@ -6,6 +6,9 @@ from django.contrib.auth import authenticate,logout
 from rest_framework.authtoken.models import Token
 
 from rest_framework.views import APIView
+from datetime import datetime
+from django.utils import timezone
+from django.db.models import Count, Sum
 
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.response import Response
@@ -542,7 +545,7 @@ def get_all_clients(request):
 # Get, delete a client
 @api_view(['GET', 'DELETE'])
 @authentication_classes([CustomJWTAuthentication])
-@permission_classes([IsAuthenticated, IsAdmin])
+@permission_classes([IsAuthenticated, IsAdmin,IsClient])
 def get_delete_client(request, pk):
     """
     Get or delete a client - admin only
@@ -587,3 +590,219 @@ def update_client_profile(request):
             
     except Client.DoesNotExist:
         return Response({"error": "العميل غير موجود"}, status=status.HTTP_404_NOT_FOUND)
+    
+@api_view(['GET'])
+@authentication_classes([CustomJWTAuthentication])
+@permission_classes([IsAuthenticated, IsAdmin])
+def get_extern_appointments_stats(request):
+    """
+    Admin endpoint to get statistics about extern employee appointments
+    for a specific date or today by default
+    """
+    # Get date from query params or use today's date
+    date_param = request.GET.get('date')
+    
+    if date_param:
+        try:
+            # Parse the date from the parameter
+            stats_date = datetime.strptime(date_param, '%Y-%m-%d').date()
+        except ValueError:
+            return Response(
+                {"error": "تنسيق التاريخ غير صحيح. يرجى استخدام YYYY-MM-DD"}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+    else:
+        # Use today's date by default
+        stats_date = timezone.now().date()
+    
+    # Get all appointments for the specified date
+    appointments = AppointmentDomicile.objects.filter(date=stats_date)
+    
+    # Get count of total appointments
+    total_appointments = appointments.count()
+    
+    # Get count of appointments by status
+    status_counts = appointments.values('status').annotate(count=Count('status'))
+    
+    # Convert to a more user-friendly format
+    status_stats = {
+        'Pending': 0,
+        'In Progress': 0,
+        'Completed': 0,
+        'Deleted': 0
+    }
+    
+    for item in status_counts:
+        status_stats[item['status']] = item['count']
+    
+    # Get count of unique extern employees who have appointments on this date
+    total_employees = appointments.values('extern_employee').distinct().count()
+    
+    # Compile response
+    response_data = {
+        'date': stats_date.strftime('%Y-%m-%d'),
+        'total_appointments': total_appointments,
+        'total_employees_with_appointments': total_employees,
+        'status_breakdown': status_stats,
+    }
+    
+    return Response(response_data)
+
+
+
+@api_view(['GET'])
+@authentication_classes([CustomJWTAuthentication])
+@permission_classes([IsAuthenticated, IsAdmin])
+def get_intern_appointments_stats(request):
+    """
+    Admin endpoint to get statistics about extern employee appointments
+    for a specific date or today by default
+    """
+    # Get date from query params or use today's date
+    date_param = request.GET.get('date')
+    
+    if date_param:
+        try:
+            # Parse the date from the parameter
+            stats_date = datetime.strptime(date_param, '%Y-%m-%d').date()
+        except ValueError:
+            return Response(
+                {"error": "تنسيق التاريخ غير صحيح. يرجى استخدام YYYY-MM-DD"}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+    else:
+        # Use today's date by default
+        stats_date = timezone.now().date()
+    
+    # Get all appointments for the specified date
+    appointments = AppointmentLocation.objects.filter(date=stats_date)
+    
+    # Get count of total appointments
+    total_appointments = appointments.count()
+    
+    # Get count of appointments by status
+    status_counts = appointments.values('status').annotate(count=Count('status'))
+    
+    # Convert to a more user-friendly format
+    status_stats = {
+        'Pending': 0,
+        'In Progress': 0,
+        'Completed': 0,
+        'Deleted': 0
+    }
+    
+    for item in status_counts:
+        status_stats[item['status']] = item['count']
+    
+    # Get count of unique extern employees who have appointments on this date
+    
+    
+    # Compile response
+    response_data = {
+        'date': stats_date.strftime('%Y-%m-%d'),
+        'total_appointments': total_appointments,
+        'status_breakdown': status_stats,
+    }
+    
+    return Response(response_data)
+
+@api_view(['GET'])
+@authentication_classes([CustomJWTAuthentication])
+@permission_classes([IsAuthenticated, IsAdmin])
+def get_intern_appointments_revenue(request):
+    """
+    Calculate total revenue for all completed intern appointments for a specific date
+    """
+    try:
+        # Get date from query params or use today's date
+        date_param = request.GET.get('date')
+        
+        if date_param:
+            try:
+                # Parse the date from the parameter
+                stats_date = datetime.strptime(date_param, '%Y-%m-%d').date()
+            except ValueError:
+                return Response(
+                    {"error": "Invalid date format. Please use YYYY-MM-DD"}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        else:
+            # Use today's date by default
+            stats_date = timezone.now().date()
+        
+        # Get all completed appointments for the specified date
+        appointments_completed = AppointmentLocation.objects.filter(
+            date=stats_date,
+            status='Completed'
+        )
+        
+        # Calculate total revenue, handle case where no appointments exist
+        total_revenue = appointments_completed.aggregate(total=Sum('price'))['total'] or 0
+        
+        response_data = {
+            'date': stats_date.strftime('%Y-%m-%d'),
+            'total_revenue': float(total_revenue),  # Convert Decimal to float for JSON serialization
+            'appointment_count': appointments_completed.count()
+        }
+        
+        return Response(response_data)
+    
+    except Exception as e:
+        # Log the exception for debugging
+        print(f"Error in get_intern_appointments_revenue: {str(e)}")
+        # Always return a Response object, even in case of errors
+        return Response(
+            {"error": "An error occurred while processing your request."},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+    
+@api_view(['GET'])
+@authentication_classes([CustomJWTAuthentication])
+@permission_classes([IsAuthenticated, IsAdmin])
+def get_extern_appointments_revenue(request):
+    """
+    Calculate total revenue for all completed intern appointments for a specific date
+    """
+    try:
+        # Get date from query params or use today's date
+        date_param = request.GET.get('date')
+        
+        if date_param:
+            try:
+                # Parse the date from the parameter
+                stats_date = datetime.strptime(date_param, '%Y-%m-%d').date()
+            except ValueError:
+                return Response(
+                    {"error": "Invalid date format. Please use YYYY-MM-DD"}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        else:
+            # Use today's date by default
+            stats_date = timezone.now().date()
+        
+        # Get all completed appointments for the specified date
+        appointments_completed = AppointmentDomicile.objects.filter(
+            date=stats_date,
+            status='Completed'
+        )
+        
+        # Calculate total revenue, handle case where no appointments exist
+        total_revenue = appointments_completed.aggregate(total=Sum('price'))['total'] or 0
+        
+        response_data = {
+            'date': stats_date.strftime('%Y-%m-%d'),
+            'total_revenue': float(total_revenue),  # Convert Decimal to float for JSON serialization
+            'appointment_count': appointments_completed.count()
+        }
+        
+        return Response(response_data)
+    
+    except Exception as e:
+        # Log the exception for debugging
+        print(f"Error in get_extern_appointments_revenue: {str(e)}")
+        # Always return a Response object, even in case of errors
+        return Response(
+            {"error": "An error occurred while processing your request."},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )

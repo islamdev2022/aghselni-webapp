@@ -5,7 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import api from '../api';
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import UserDropdown from './UserDropdown';
-import { useClient } from '@/contexts/clientContext';
+// import { useClient } from '@/contexts/clientContext';
 // interface UserData {
 //   id: number
 //   full_name: string
@@ -13,8 +13,12 @@ import { useClient } from '@/contexts/clientContext';
 //   user_type: string
 // }
 interface ClientDashboardData {
-  message: string
-  user_id: number
+  id: number;
+  full_name: string;
+  email: string;
+  photo: string;
+  age: number;
+  phone_number: string;
 }
 
 const Navbar = () => {
@@ -26,7 +30,7 @@ const Navbar = () => {
 
 
   // Get user data from context
-  const { Client: userData } = useClient();
+  // const { Client: userData } = useClient();
 
   // Use query key for user data
   const USER_QUERY_KEY = 'userData';
@@ -36,7 +40,7 @@ const Navbar = () => {
     const checkAuth = async () => {
       try {
         setIsLoading(true);
-        const response = await api.get('/api/client/dashboard/');
+        const response = await api.get('/api/client/profile/');
         setClient(response.data);
         // Cache the user data
         queryClient.setQueryData([USER_QUERY_KEY], response.data);
@@ -99,7 +103,7 @@ const Navbar = () => {
       behavior: "smooth",
     });
   }
-console.log(userData);
+// console.log(userData);
 console.log(client)
   // Authentication buttons based on login status
   const AuthButtons = () => {
@@ -107,11 +111,11 @@ console.log(client)
       return <div className="h-10 w-32 bg-gray-200 animate-pulse rounded"></div>;
     }
 
-    if (userData) {
+    if (client) {
       return (
         <div className="flex items-center space-x-4">
       <UserDropdown 
-        userData={userData} 
+        userData={client} 
         handleLogout={handleLogout} 
         logoutMutation={logoutMutation} 
       />
@@ -141,14 +145,14 @@ console.log(client)
       return <div className="h-10 bg-gray-200 animate-pulse rounded my-4"></div>;
     }
 
-    if (userData) {
+    if (client) {
       return (
         <>
           <li>
-            <Link to={`/profile/${ userData?.id}`}>
+            <Link to={`/profile/${ client?.id}`}>
               <Button className="w-full flex justify-center items-center space-x-2 bg-white text-cyan-600 hover:bg-slate-100 shadow cursor-pointer">
                 <User size={18} />
-                <span>{userData.id || 'Profile'}</span>
+                <span>{client.id || 'Profile'}</span>
               </Button>
             </Link>
           </li>

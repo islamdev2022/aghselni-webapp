@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.hashers import make_password, check_password
 from django.utils import timezone
+import datetime
 
 # جدول العملاء
 class Client(models.Model):
@@ -87,7 +88,7 @@ class AppointmentDomicile(models.Model):
         ('Completed', 'Completed'),
         ('Deleted', 'Deleted'),
     ]
-    # date = models.DateField( default=timezone.now)
+    date = models.DateField(default=datetime.date.today)
     time = models.TimeField()
     car_type = models.CharField(max_length=50)
     car_name = models.CharField(max_length=50)

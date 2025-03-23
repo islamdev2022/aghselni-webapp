@@ -39,7 +39,7 @@ export default function AdminDashboard() {
     queryFn: async () => {
       const internResponse = await api.get("/api/admin/intern_employees/")
       const externResponse = await api.get("/api/admin/extern_employees/")
-
+      
       const internEmployees = internResponse.data.map((emp: any) => ({
         ...emp,
         type: "intern_employee",
@@ -52,11 +52,23 @@ export default function AdminDashboard() {
 
       return [
          ...internEmployees,
-         ...externEmployees]
+         ...externEmployees,
+        ]
     },
   })
 
-  if (isLoading) {
+  const {
+    data: clients,
+    isLoading: isClientsLoading,
+  } = useQuery({
+    queryKey: ["clients"],
+    queryFn: async () => {
+      const response = await api.get("/api/admin/clients")
+      return response.data
+    },
+  })
+
+  if (isLoading || isClientsLoading) {
     return (
       <AdminLayout>
         <div className="flex h-full items-center justify-center">
@@ -89,7 +101,7 @@ export default function AdminDashboard() {
           />
           <StatCard
             title="Total Clients"
-            value={stats?.totalClients || 0}
+            value={clients.length || 0}
             icon={<Users className="h-6 w-6 text-indigo-600" />}
             trend={+12}
             link="/admin/clients"

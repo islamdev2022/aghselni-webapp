@@ -2,25 +2,20 @@
 
 import { useState } from "react"
 import { useQuery,useQueryClient,useMutation } from "@tanstack/react-query"
-import { Search, Plus, Edit, Trash2, UserCog,  Phone } from "lucide-react"
+import { Search, Plus, Edit, Trash2, UserCog,  Phone,AlertTriangle } from "lucide-react"
 import  api  from "@/api"
 import AdminLayout from "@/components/layouts/AdminLayout"
 import { Link } from "react-router-dom"
-// interface Employee {
-//   id: number
-//   name: string
-//   email: string
-//   phone: string
-//   type: "intern_employee" | "extern_employee"
-//   status: "active" | "inactive"
-//   joinDate: string
-// }
+
 
 export default function EmployeesPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [filterType, setFilterType] = useState<string>("all")
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [employeeToDelete,setEmployeeToDelete] = useState<number | null>(null)
+
   const queryClient = useQueryClient()
-  const { data: employees, isLoading } = useQuery({
+  const { data: employees, isLoading,refetch } = useQuery({
     queryKey: ["employees"],
     queryFn: async () => {
       const internResponse = await api.get("/api/admin/intern_employees/")
@@ -44,22 +39,35 @@ export default function EmployeesPage() {
 
   const deleteEmployee = useMutation({
     mutationFn: async (id: number) => {
-      await api.delete(`/api/admin/intern_employee/${id}/`)
+      const employeeToDelete = employees?.find(emp => emp.employee.id === id);
+      if (employeeToDelete?.type === "intern_employee") {
+        return await api.delete(`/api/admin/intern_employee/${id}/`)
+      }
+      else {
+        await api.delete(`/api/admin/extern_employee/${id}/`)
+      }
+      
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["employees"] })
+      refetch()
+      setShowDeleteModal(false)
     },
     onError: (error: any) => {
       console.error(error)
     }
   })
 
-  const handleDeleteEmployee = async (id: number) => {
-    await deleteEmployee.mutateAsync(id)
-
-
+  const handleDeleteClick = (clientId: number) => {
+    setEmployeeToDelete(clientId)
+    setShowDeleteModal(true)
   }
-  console.log(employees)
+
+  const confirmDelete = () => {
+    if (deleteEmployee && employeeToDelete !== null) {
+      deleteEmployee.mutate(employeeToDelete)
+    }
+  }
   if (isLoading) {
     return (
         <AdminLayout>
@@ -200,7 +208,7 @@ return (
                           <Edit className="h-4 w-4" />
                         </button>
                         <button 
-                          onClick={() => handleDeleteEmployee(employee.employee.id)}
+                          onClick={() => handleDeleteClick(employee.employee.id)}
                         className="rounded-lg border border-gray-200 bg-white p-1.5 text-red-600 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1">
                           <Trash2 className="h-4 w-4" />
                         </button>
@@ -244,6 +252,59 @@ return (
         </div>
       )}
     </div>
+    {/* Delete Confirmation Modal */}
+    {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
+            <div className="mb-4 flex items-center justify-center text-red-600">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+                <AlertTriangle className="h-6 w-6" />
+              </div>
+            </div>
+            <h3 className="mb-2 text-center text-lg font-bold text-gray-900">Confirm Delete</h3>
+            <p className="mb-6 text-center text-gray-600">
+              Are you sure you want to delete this client? This action cannot be undone.
+            </p>
+            <div className="flex justify-center space-x-4">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                disabled={deleteEmployee.isPending}
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-70"
+              >
+                {deleteEmployee.isPending ? (
+                  <span className="flex items-center">
+                    <svg className="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24">
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                        fill="none"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      />
+                    </svg>
+                    Deleting...
+                  </span>
+                ) : (
+                  "Delete Client"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
   </AdminLayout>
 );
 }

@@ -1,13 +1,16 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { LogOut, Settings } from 'lucide-react';
-import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { LogOut, Settings } from "lucide-react";
+import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 
 interface UserDropdownProps {
   userData: {
     id: number;
     full_name?: string;
     email?: string;
+    photo?: string;
+    age?: number;
+    phone_number?: string;
   } | null;
   handleLogout: () => void;
   logoutMutation: {
@@ -15,29 +18,40 @@ interface UserDropdownProps {
   };
 }
 
-const UserDropdown: React.FC<UserDropdownProps> = ({ 
-  userData, 
-  handleLogout, 
-  logoutMutation 
+const UserDropdown: React.FC<UserDropdownProps> = ({
+  userData,
+  handleLogout,
+  logoutMutation,
 }) => {
   const navigate = useNavigate();
 
   const handleEditProfile = () => {
-    navigate(`/profile/client/${userData?.id}/edit`);
+    navigate(`/profile/client/${userData?.id}/`);
   };
-
+  console.log(userData?.photo);
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger asChild>
         <div className="flex items-center h-10 w-10 rounded-full bg-cyan-600 text-white cursor-pointer hover:bg-cyan-700">
           <div className="flex items-center justify-center w-full h-full font-semibold text-xl">
             {/* <User size={18} /> */}
-            <div>
-              {userData?.full_name?.indexOf(' ') !== -1
-                ? userData?.full_name?.split(' ')[0].charAt(0).toUpperCase() 
-                : userData?.full_name?.charAt(0).toUpperCase()
-                }
-            </div>
+            <img
+              src={`${
+                userData?.photo
+                  ? `http://127.0.0.1:8000/${userData?.photo}`
+                  : `${(
+                      <div>
+                        {userData?.full_name?.indexOf(" ") !== -1
+                          ? userData?.full_name
+                              ?.split(" ")[0]
+                              .charAt(0)
+                              .toUpperCase()
+                          : userData?.full_name?.charAt(0).toUpperCase()}
+                      </div>
+                    )}`
+              }`}
+              alt="ezzrd"
+            />
           </div>
         </div>
       </DropdownMenu.Trigger>
@@ -73,7 +87,9 @@ const UserDropdown: React.FC<UserDropdownProps> = ({
               className="flex items-center space-x-2 p-2 text-gray-700 hover:bg-slate-100 rounded cursor-pointer"
             >
               <LogOut size={16} />
-              <span>{logoutMutation.isPending ? 'Logging out...' : 'Logout'}</span>
+              <span>
+                {logoutMutation.isPending ? "Logging out..." : "Logout"}
+              </span>
             </div>
           </DropdownMenu.Item>
         </DropdownMenu.Content>

@@ -22,7 +22,11 @@ from .views import (
     create_appointment_location,
     update_client_profile,
     get_all_clients,
-    get_delete_client
+    get_delete_client,
+    get_extern_appointments_stats,
+    get_intern_appointments_stats,
+    get_intern_appointments_revenue,
+    get_extern_appointments_revenue
 )
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
@@ -83,7 +87,14 @@ urlpatterns = [
     
     path('admin/clients/', get_all_clients, name='get_all_clients'),
     path('admin/client/<int:pk>/', get_delete_client, name='get_update_delete_client'),
+    #calculate appointments stats
+    path('admin/appointments/stats/e', get_extern_appointments_stats, name='appointment_stats'),
+    path('admin/appointments/stats/i', get_intern_appointments_stats, name='appointment_stats'),
+    #calculate appointments revenues
+    path('admin/appointments/revenue/i', get_intern_appointments_revenue, name='appointment_revenue'),
+    path('admin/appointments/revenue/e', get_extern_appointments_revenue, name='appointment_revenue'),
     
     # client modify his informations
     path('client/profile/', update_client_profile, name='update_client_profile'),
+    path('client/profile/<int:pk>/', get_delete_client, name='get_update_delete_client'),
 ]

@@ -2,17 +2,17 @@
 
 import { useState } from "react"
 import { useQuery, useMutation } from "@tanstack/react-query"
-import { Search, Edit, Trash2, User, Mail, Phone, AlertTriangle } from "lucide-react"
+import { Search, Trash2, User, Mail, Phone, AlertTriangle } from "lucide-react"
 import api from "@/api"
 import AdminLayout from "@/components/layouts/AdminLayout"
 
 interface Client {
   id: number
-  name: string
+  full_name: string
   email: string
   phone: string
-  joinDate: string
-  totalAppointments: number
+  age: number
+  photo: string | null
 }
 
 export default function ClientsPage() {
@@ -34,7 +34,7 @@ export default function ClientsPage() {
 
   const deleteMutation = useMutation({
     mutationFn: async (clientId: number) => {
-      await api.delete(`/api/admin/client/${clientId}`)
+      await api.delete(`/api/admin/client/${clientId}/`)
     },
     onSuccess: () => {
       refetch()
@@ -43,47 +43,12 @@ export default function ClientsPage() {
     },
   })
 
-  // Sample data for demonstration
-  const sampleClients: Client[] = [
-    {
-      id: 1,
-      name: "Alex Johnson",
-      email: "alex.johnson@example.com",
-      phone: "+1 (555) 123-4567",
-      joinDate: "2024-01-10",
-      totalAppointments: 5,
-    },
-    {
-      id: 2,
-      name: "Maria Garcia",
-      email: "maria.garcia@example.com",
-      phone: "+1 (555) 234-5678",
-      joinDate: "2024-02-15",
-      totalAppointments: 3,
-    },
-    {
-      id: 3,
-      name: "Robert Smith",
-      email: "robert.smith@example.com",
-      phone: "+1 (555) 345-6789",
-      joinDate: "2024-03-05",
-      totalAppointments: 1,
-    },
-    {
-      id: 4,
-      name: "Jennifer Lee",
-      email: "jennifer.lee@example.com",
-      phone: "+1 (555) 456-7890",
-      joinDate: "2024-03-12",
-      totalAppointments: 2,
-    },
-  ]
 
-  const displayClients = clients || sampleClients
+  const displayClients = clients || []
 
 const filteredClients: Client[] = displayClients.filter((client: Client) => {
     return (
-        client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        client.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         client.email.toLowerCase().includes(searchTerm.toLowerCase())
     )
 })
@@ -136,10 +101,7 @@ const filteredClients: Client[] = displayClients.filter((client: Client) => {
                     <th className="whitespace-nowrap px-4 py-3 text-left text-sm font-medium text-gray-500">Name</th>
                     <th className="whitespace-nowrap px-4 py-3 text-left text-sm font-medium text-gray-500">Contact</th>
                     <th className="whitespace-nowrap px-4 py-3 text-left text-sm font-medium text-gray-500">
-                      Join Date
-                    </th>
-                    <th className="whitespace-nowrap px-4 py-3 text-left text-sm font-medium text-gray-500">
-                      Appointments
+                      age
                     </th>
                     <th className="whitespace-nowrap px-4 py-3 text-left text-sm font-medium text-gray-500">Actions</th>
                   </tr>
@@ -151,13 +113,13 @@ const filteredClients: Client[] = displayClients.filter((client: Client) => {
                         <div className="flex items-center">
                           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 text-indigo-700">
                             <span className="text-sm font-medium">
-                              {client.name
+                              {client.full_name
                                 .split(" ")
                                 .map((n) => n[0])
                                 .join("")}
                             </span>
                           </div>
-                          <span className="ml-2">{client.name}</span>
+                          <span className="ml-2">{client.full_name}</span>
                         </div>
                       </td>
                       <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-600">
@@ -172,19 +134,14 @@ const filteredClients: Client[] = displayClients.filter((client: Client) => {
                           </div>
                         </div>
                       </td>
-                      <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-600">
-                        {new Date(client.joinDate).toLocaleDateString()}
-                      </td>
+
                       <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-600">
                         <span className="inline-flex items-center rounded-full bg-cyan-50 px-2.5 py-0.5 text-xs font-medium text-cyan-700">
-                          {client.totalAppointments} appointments
+                          {client.age} year
                         </span>
                       </td>
                       <td className="whitespace-nowrap px-4 py-3 text-sm">
                         <div className="flex space-x-2">
-                          <button className="rounded-lg border border-gray-200 bg-white p-1.5 text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-1">
-                            <Edit className="h-4 w-4" />
-                          </button>
                           <button
                             className="rounded-lg border border-gray-200 bg-white p-1.5 text-red-600 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1"
                             onClick={() => handleDeleteClick(client.id)}
