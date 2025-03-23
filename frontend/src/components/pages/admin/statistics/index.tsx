@@ -8,8 +8,6 @@ import AdminLayout from "@/components/layouts/AdminLayout"
 import {
   BarChart as RechartsBarChart,
   Bar,
-  LineChart as RechartsLineChart,
-  Line,
   PieChart as RechartsPieChart,
   Pie,
   Cell,
@@ -20,7 +18,8 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts"
-
+import AppointmentsByDayChart from "./AppointmentsByChart"
+import RevenueTrend from "./RevenueTrend"
 interface StatisticsData {
   servicesByType: {
     name: string
@@ -42,7 +41,7 @@ interface StatisticsData {
 }
 
 export default function StatisticsPage() {
-  const [timeRange, setTimeRange] = useState("month")
+  const [timeRange, setTimeRange] = useState<"week" | "month" | "quarter" | "year">("month")
 
   const { data: stats, isLoading } = useQuery({
     queryKey: ["statistics", timeRange],
@@ -101,7 +100,7 @@ export default function StatisticsPage() {
           <div className="flex items-center space-x-2">
             <select
               value={timeRange}
-              onChange={(e) => setTimeRange(e.target.value)}
+              onChange={(e) => setTimeRange(e.target.value as "week" | "month" | "quarter" | "year")}
               className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500"
             >
               <option value="week">Last Week</option>
@@ -245,83 +244,14 @@ export default function StatisticsPage() {
             </div>
 
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-              <div className="rounded-xl bg-white p-6 shadow-sm">
-                <div className="mb-4 flex items-center justify-between">
-                  <h2 className="text-lg font-semibold text-gray-800">Revenue Trend</h2>
-                  <div className="rounded-lg bg-cyan-50 px-2.5 py-1 text-xs font-medium text-cyan-700">
-                    {timeRange === "week"
-                      ? "Last Week"
-                      : timeRange === "month"
-                        ? "Last Month"
-                        : timeRange === "quarter"
-                          ? "Last Quarter"
-                          : "Last Year"}
-                  </div>
-                </div>
                 <div className="h-64">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <RechartsLineChart
-                      data={displayData.revenueByMonth}
-                      margin={{
-                        top: 5,
-                        right: 30,
-                        left: 20,
-                        bottom: 5,
-                      }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                      <XAxis dataKey="name" />
-                      <YAxis />
-                      <Tooltip formatter={(value) => [`$${value}`, "Revenue"]} />
-                      <Line
-                        type="monotone"
-                        dataKey="value"
-                        stroke="#0891b2"
-                        strokeWidth={2}
-                        dot={{ r: 4 }}
-                        activeDot={{ r: 6 }}
-                      />
-                    </RechartsLineChart>
-                  </ResponsiveContainer>
+                <RevenueTrend timeRange={timeRange} />
                 </div>
-              </div>
 
-              <div className="rounded-xl bg-white p-6 shadow-sm">
-                <div className="mb-4 flex items-center justify-between">
-                  <h2 className="text-lg font-semibold text-gray-800">Appointments by Day</h2>
-                  <div className="rounded-lg bg-cyan-50 px-2.5 py-1 text-xs font-medium text-cyan-700">
-                    {timeRange === "week"
-                      ? "Last Week"
-                      : timeRange === "month"
-                        ? "Last Month"
-                        : timeRange === "quarter"
-                          ? "Last Quarter"
-                          : "Last Year"}
-                  </div>
-                </div>
                 <div className="h-64">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <RechartsBarChart
-                      data={displayData.appointmentsByDay}
-                      margin={{
-                        top: 5,
-                        right: 30,
-                        left: 20,
-                        bottom: 5,
-                      }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                      <XAxis dataKey="name" />
-                      <YAxis />
-                      <Tooltip />
-                      <Legend />
-                      <Bar dataKey="completed" name="Completed" fill="#10b981" radius={[4, 4, 0, 0]} barSize={20} />
-                      <Bar dataKey="cancelled" name="Cancelled" fill="#ef4444" radius={[4, 4, 0, 0]} barSize={20} />
-                    </RechartsBarChart>
-                  </ResponsiveContainer>
+                  <AppointmentsByDayChart timeRange={timeRange} />
                 </div>
               </div>
-            </div>
           </>
         )}
       </div>
