@@ -98,6 +98,7 @@ const Navbar = () => {
   };
 
   const scrollUp = () => {
+    setIsMenuOpen(!isMenuOpen)
     window.scrollTo({
       top: 0,
       behavior: "smooth",
@@ -147,16 +148,33 @@ console.log(client)
 
     if (client) {
       return (
-        <>
-          <li>
-            <Link to={`/profile/${ client?.id}`}>
+        <div className='flex justify-evenly'>
+          <div className="flex  space-y-4" onClick={() => setIsMenuOpen(false)}>
+            <Link to={`/profile/client/${client?.id}`}>
               <Button className="w-full flex justify-center items-center space-x-2 bg-white text-cyan-600 hover:bg-slate-100 shadow cursor-pointer">
                 <User size={18} />
-                <span>{client.id || 'Profile'}</span>
+                <img
+                className='w-7'
+              src={`${
+                client?.photo
+                  ? `http://127.0.0.1:8000/${client?.photo}`
+                  : `${(
+                      <div>
+                        {client?.full_name?.indexOf(" ") !== -1
+                          ? client?.full_name
+                              ?.split(" ")[0]
+                              .charAt(0)
+                              .toUpperCase()
+                          : client?.full_name?.charAt(0).toUpperCase()}
+                      </div>
+                    )}`
+              }`}
+              alt="Profile Image"
+            />
               </Button>
             </Link>
-          </li>
-          <li>
+          </div>
+          <div>
             <Button 
               onClick={handleLogout} 
               className="w-full flex justify-center items-center space-x-2 bg-cyan-600 hover:bg-cyan-700 cursor-pointer"
@@ -165,22 +183,22 @@ console.log(client)
               <LogOut size={18} />
               <span>{logoutMutation.isPending ? 'Logging out...' : 'Logout'}</span>
             </Button>
-          </li>
-        </>
+          </div>
+        </div>
       );
     }
 
     return (
       <>
         <li>
-          <Link to="/login/client">
+          <Link to="/login/client" onClick={() => setIsMenuOpen(false)}>
             <Button className="w-full bg-cyan-600 hover:bg-cyan-700 cursor-pointer">
               Sign In
             </Button>
           </Link>
         </li>
         <li>
-          <Link to="/signup">
+          <Link to="/signup" onClick={() => setIsMenuOpen(false)}>
             <Button className="w-full bg-white text-cyan-600 hover:bg-slate-100 cursor-pointer shadow">
               Sign Up
             </Button>
@@ -200,11 +218,11 @@ console.log(client)
           </Link>
 
           {/* Desktop Navigation */}
-          <ul className="hidden md:flex space-x-8">
+          <ul className="hidden md:flex space-x-8" >
             <li><Link to="/" className="text-gray-700 hover:text-cyan-600 font-medium duration-200" onClick={scrollUp}>Home</Link></li>
-            <li><a href="/#services" className="text-gray-700 hover:text-cyan-600 font-medium duration-200">Services</a></li>
-            <li><a href="/#how-it-works" className="text-gray-700 hover:text-cyan-600 font-medium duration-200">How It Works</a></li>
-            <li><a href="/#testimonials" className="text-gray-700 hover:text-cyan-600 font-medium duration-200">Testimonials</a></li>
+            <li><a href="/#services" className="text-gray-700 hover:text-cyan-600 font-medium duration-200" >Services</a></li>
+            <li><a href="/#how-it-works" className="text-gray-700 hover:text-cyan-600 font-medium duration-200" >How It Works</a></li>
+            <li onClick={() => setIsMenuOpen(false)}><a href="/#testimonials" className="text-gray-700 hover:text-cyan-600 font-medium duration-200">Testimonials</a></li>
           </ul>
 
           <div className="hidden md:flex space-x-4">

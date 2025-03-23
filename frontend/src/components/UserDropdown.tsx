@@ -50,7 +50,7 @@ const UserDropdown: React.FC<UserDropdownProps> = ({
                       </div>
                     )}`
               }`}
-              alt="ezzrd"
+              alt="Profile Image"
             />
           </div>
         </div>

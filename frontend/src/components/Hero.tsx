@@ -18,7 +18,7 @@ const Hero = () => {
               </Button>
             </Link>
 
-            <div className="grid grid-cols-3 gap-4 mt-12 text-cyan-500">
+            <div className="grid md:grid-cols-3 gap-4 mt-12 text-cyan-500">
               <div className="bg-white bg-opacity-20 backdrop-blur-sm p-4 rounded-lg text-center shadow-2xl ">
                 <div className="text-3xl mb-2">🕒</div>
                 <h3 className="font-bold mb-1 ">Save Time</h3>
