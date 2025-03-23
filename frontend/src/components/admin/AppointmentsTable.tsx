@@ -75,7 +75,7 @@ export default function AppointmentsTable() {
             Pending
           </span>
         )
-      case "completed":
+      case "Completed":
         return (
           <span className="inline-flex items-center rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-700">
             <Check className="mr-1 h-3 w-3" />

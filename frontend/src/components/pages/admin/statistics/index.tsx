@@ -57,8 +57,7 @@ export default function StatisticsPage() {
     servicesByType: [
       { name: "Full Wash", value: 45 },
       { name: "Interior Cleaning", value: 30 },
-      { name: "Express Wash", value: 60 },
-      { name: "Premium Wash", value: 25 },
+      { name: "Exrern Wash", value: 60 },
     ],
     servicesByLocation: [
       { name: "Local", value: 85 },

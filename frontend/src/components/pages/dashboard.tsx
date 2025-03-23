@@ -7,8 +7,8 @@ import RevenueChart from "../../components/admin/RevenueChart"
 import AppointmentsTable from "../../components/admin/AppointmentsTable"
 
 interface DashboardStats {
-  totalEmployees: number
-  totalClients: number
+  date: string
+  total_appointments: number
   dailyServices: {
     local: number
     external: number
@@ -17,23 +17,26 @@ interface DashboardStats {
     pending: number
     completed: number
   }
-  revenue: {
-    daily: number
-    weekly: number
-    monthly: number
-    yearly: number
-  }
 }
 
 export default function AdminDashboard() {
   const { data: stats,  } = useQuery({
     queryKey: ["admin-stats"],
     queryFn: async () => {
-      const response = await api.get<DashboardStats>("/api/admin/stats")
+      const response = await api.get<DashboardStats>("/api/admin/appointments/stats/i")
       return response.data
     },
   })
 
+  const { data : revenue } = useQuery({
+    queryKey: ["admin-revenue"],
+    queryFn: async () => {
+      const response = await api.get("/api/admin/appointments/revenue/i")
+      return response.data
+    }
+  })
+  console.log(revenue)
+console.log(stats)
   const { data: employees, isLoading } = useQuery({
     queryKey: ["employees"],
     queryFn: async () => {
@@ -108,14 +111,14 @@ export default function AdminDashboard() {
           />
           <StatCard
             title="Today's Services"
-            value={(stats?.dailyServices.local || 0) + (stats?.dailyServices.external || 0)}
+            value={(stats?.total_appointments || 0) + (stats?.dailyServices?.external || 0)}
             icon={<Car className="h-6 w-6 text-emerald-600" />}
             trend={+3}
             link="/admin/services"
           />
           <StatCard
             title="Today's Revenue"
-            value={stats?.revenue.daily || 0}
+            value={revenue.total_revenue || 0}
             isCurrency={true}
             icon={<DollarSign className="h-6 w-6 text-amber-600" />}
             trend={+8}
@@ -137,7 +140,7 @@ export default function AdminDashboard() {
                   </div>
                   <div className="relative h-40 w-24 overflow-hidden rounded-t-lg bg-gradient-to-t from-cyan-600 to-cyan-500">
                     <div className="absolute bottom-2 left-0 right-0 text-center text-sm font-bold text-white">
-                      {stats?.dailyServices.local || 0}
+                       {stats?.total_appointments|| 0}
                     </div>
                   </div>
                   <p className="mt-2 text-sm font-medium text-gray-700">Local</p>
@@ -148,7 +151,7 @@ export default function AdminDashboard() {
                   </div>
                   <div className="relative h-28 w-24 overflow-hidden rounded-t-lg bg-gradient-to-t from-indigo-600 to-indigo-500">
                     <div className="absolute bottom-2 left-0 right-0 text-center text-sm font-bold text-white">
-                      {stats?.dailyServices.external || 0}
+                      {/* {stats?.total_appointments|| 0} */}
                     </div>
                   </div>
                   <p className="mt-2 text-sm font-medium text-gray-700">External</p>
@@ -160,12 +163,12 @@ export default function AdminDashboard() {
           <div className="rounded-xl bg-white p-6 shadow-sm">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-lg font-semibold text-gray-800">Revenue Overview</h2>
-              <select className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500">
+              {/* <select className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500">
                 <option value="daily">Daily</option>
                 <option value="weekly">Weekly</option>
                 <option value="monthly">Monthly</option>
                 <option value="yearly">Yearly</option>
-              </select>
+              </select> */}
             </div>
             <div className="h-64">
               <RevenueChart />
