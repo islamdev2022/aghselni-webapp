@@ -39,58 +39,82 @@ interface StatisticsData {
     cancelled: number
   }[]
 }
+interface Stats {
+  date: string
+  total_appointments: number
+  
+}
 
 export default function StatisticsPage() {
   const [timeRange, setTimeRange] = useState<"week" | "month" | "quarter" | "year">("month")
 
-  const { data: stats, isLoading } = useQuery({
-    queryKey: ["statistics", timeRange],
+
+  // Fetch domicile appointments
+  const { data: domicileAppointments, isLoading: isDomicileLoading } = useQuery({
+    queryKey: ["domicile-appointments"],
     queryFn: async () => {
-      const response = await api.get<StatisticsData>(`/api/admin/statistics?range=${timeRange}`)
+      const response = await api.get("/api/appointments_domicile/get")
       return response.data
     },
   })
 
-  // Sample data for demonstration
-  const sampleData: StatisticsData = {
-    servicesByType: [
-      { name: "Full Wash", value: 45 },
-      { name: "Interior Cleaning", value: 30 },
-      { name: "Exrern Wash", value: 60 },
-    ],
-    servicesByLocation: [
-      { name: "Local", value: 85 },
-      { name: "External", value: 75 },
-    ],
-    revenueByMonth: [
-      { name: "Jan", value: 4000 },
-      { name: "Feb", value: 5000 },
-      { name: "Mar", value: 6000 },
-      { name: "Apr", value: 7000 },
-      { name: "May", value: 8000 },
-      { name: "Jun", value: 9000 },
-    ],
-    appointmentsByDay: [
-      { name: "Mon", completed: 12, cancelled: 2 },
-      { name: "Tue", completed: 15, cancelled: 1 },
-      { name: "Wed", completed: 18, cancelled: 3 },
-      { name: "Thu", completed: 14, cancelled: 2 },
-      { name: "Fri", completed: 20, cancelled: 1 },
-      { name: "Sat", completed: 25, cancelled: 0 },
-      { name: "Sun", completed: 10, cancelled: 1 },
-    ],
-  }
+  // Fetch intern appointments
+  const { data: internAppointments, isLoading: isInternLoading } = useQuery({
+    queryKey: ["intern-appointments"],
+    queryFn: async () => {
+      const response = await api.get("/api/appointments_location/get")
+      return response.data
+    },
+  })
 
-  const displayData = stats || sampleData
+  console.log("domicile", domicileAppointments)
+  console.log("intern", internAppointments)
+
+  const { data: statsLocal, isLoading: isLoadingLocal } = useQuery<Stats>({
+    queryKey: ["admin-stats-local"],
+    queryFn: async () => {
+      const response = await api.get<Stats>("/api/admin/appointments/stats/i");
+      return response.data;
+    },
+  });
+
+  // Second query for domicile stats
+  const { data: statsDomicile, isLoading: isLoadingDomicile } = useQuery<Stats>({
+    queryKey: ["admin-stats-domicile"],
+    queryFn: async () => {
+      const response = await api.get<Stats>("/api/admin/appointments/stats/e");
+      return response.data;
+    },
+  });
+
+  // Log the data (you might want to remove this in production)
+  console.log("Local Stats:", statsLocal);
+  console.log("Domicile Stats:", statsDomicile);
+
+  // Transform the data into an array format for the chart
+  const displayData = [
+    {
+      name: "Local",
+      value: statsLocal?.total_appointments || 0
+    },
+    {
+      name: "Domicile",
+      value: statsDomicile?.total_appointments || 0
+    }
+  ];
+
+  console.log("displayData", displayData)
 
   const COLORS = ["#0891b2", "#6366f1", "#ec4899", "#f59e0b", "#10b981"]
 
-  const totalServices = displayData.servicesByType.reduce((sum, item) => sum + item.value, 0)
-  const totalRevenue = displayData.revenueByMonth.reduce((sum, item) => sum + item.value, 0)
-  const totalAppointments = displayData.appointmentsByDay.reduce(
-    (sum, item) => sum + item.completed + item.cancelled,
-    0,
-  )
+   const totalServices = internAppointments.length + domicileAppointments.length
+  const totalRevenue = (internAppointments ? internAppointments.reduce((sum: number, appointment: any) => sum + (parseFloat(appointment.price) || 0), 0) : 0) + 
+             (domicileAppointments ? domicileAppointments.reduce((sum: number, appointment: any) => sum + (parseFloat(appointment.price) || 0), 0) : 0);
+   console.log("total revenue", totalRevenue)
+  // const totalAppointments = displayData.appointmentsByDay.reduce(
+  //   (sum, item) => sum + item.completed + item.cancelled,
+  //   0,
+  // )
 
   return (
     <AdminLayout>
@@ -111,7 +135,7 @@ export default function StatisticsPage() {
           </div>
         </div>
 
-        {isLoading ? (
+        {isDomicileLoading || isInternLoading ? (
           <div className="flex h-64 items-center justify-center">
             <div className="flex items-center space-x-2">
               <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-cyan-600"></div>
@@ -149,7 +173,7 @@ export default function StatisticsPage() {
                 </div>
                 <div className="mt-4">
                   <h3 className="text-sm font-medium text-gray-500">Total Revenue</h3>
-                  <p className="mt-1 text-2xl font-bold text-gray-800">${totalRevenue.toLocaleString()}</p>
+                  <p className="mt-1 text-2xl font-bold text-gray-800">${totalRevenue}</p>
                 </div>
               </div>
 
@@ -165,7 +189,7 @@ export default function StatisticsPage() {
                 </div>
                 <div className="mt-4">
                   <h3 className="text-sm font-medium text-gray-500">Total Appointments</h3>
-                  <p className="mt-1 text-2xl font-bold text-gray-800">{totalAppointments}</p>
+                  {/* <p className="mt-1 text-2xl font-bold text-gray-800">{totalAppointments}</p> */}
                 </div>
               </div>
             </div>
@@ -188,7 +212,7 @@ export default function StatisticsPage() {
                   <ResponsiveContainer width="100%" height="100%">
                     <RechartsPieChart>
                       <Pie
-                        data={displayData.servicesByType}
+                        // data={displayData.servicesByType || []}
                         cx="50%"
                         cy="50%"
                         labelLine={false}
@@ -197,9 +221,9 @@ export default function StatisticsPage() {
                         dataKey="value"
                         label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                       >
-                        {displayData.servicesByType.map((item, index) => (
+                        {/* {displayData.servicesByType.map((item, index) => (
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
+                        ))} */}
                       </Pie>
                       <Tooltip formatter={(value) => [`${value} services`, "Count"]} />
                       <Legend />
@@ -224,7 +248,7 @@ export default function StatisticsPage() {
                 <div className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
                     <RechartsBarChart
-                      data={displayData.servicesByLocation}
+                      data={displayData}
                       margin={{
                         top: 5,
                         right: 30,
@@ -235,8 +259,16 @@ export default function StatisticsPage() {
                       <CartesianGrid strokeDasharray="3 3" vertical={false} />
                       <XAxis dataKey="name" />
                       <YAxis />
-                      <Tooltip formatter={(value) => [`${value} services`, "Count"]} />
-                      <Bar dataKey="value" fill="#0891b2" radius={[4, 4, 0, 0]} barSize={60} />
+                      <Tooltip 
+                        formatter={(value) => [`${value} services`, "Count"]} 
+                        contentStyle={{ backgroundColor: '#f5f5f5', borderRadius: '8px' }}
+                      />
+                      <Bar 
+                        dataKey="value" 
+                        fill="#0891b2" 
+                        radius={[4, 4, 0, 0]} 
+                        barSize={60} 
+                      />
                     </RechartsBarChart>
                   </ResponsiveContainer>
                 </div>

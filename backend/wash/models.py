@@ -88,7 +88,7 @@ class AppointmentDomicile(models.Model):
         ('Completed', 'Completed'),
         ('Deleted', 'Deleted'),
     ]
-    date = models.DateField(default=datetime.date.today)
+    # date = models.DateField(default=datetime.date.today)
     time = models.TimeField()
     car_type = models.CharField(max_length=50)
     car_name = models.CharField(max_length=50)

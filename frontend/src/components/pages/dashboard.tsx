@@ -9,34 +9,43 @@ import AppointmentsTable from "../../components/admin/AppointmentsTable"
 interface DashboardStats {
   date: string
   total_appointments: number
-  dailyServices: {
-    local: number
-    external: number
-  }
-  appointments: {
-    pending: number
-    completed: number
-  }
 }
 
 export default function AdminDashboard() {
-  const { data: stats,  } = useQuery({
+  const { data: statslocal,  } = useQuery({
     queryKey: ["admin-stats"],
     queryFn: async () => {
       const response = await api.get<DashboardStats>("/api/admin/appointments/stats/i")
       return response.data
     },
   })
+  console.log("stats" , statslocal)
+
+  const { data: statsdomiciel,  } = useQuery({
+    queryKey: ["admin-stats"],
+    queryFn: async () => {
+      const response = await api.get<DashboardStats>("/api/admin/appointments/stats/i")
+      return response.data
+    },
+  })
+  console.log("stats" , statsdomiciel)
+
+  
 
   const { data : revenue } = useQuery({
     queryKey: ["admin-revenue"],
     queryFn: async () => {
-      const response = await api.get("/api/admin/appointments/revenue/i")
-      return response.data
+      const responsei = await api.get("/api/admin/appointments/revenue/i")
+      const responsee = await api.get("/api/admin/appointments/revenue/e")
+
+
+      return {
+        total_revenue: responsei.data.total_revenue + responsee.data.total_revenue
+      }
     }
   })
   console.log(revenue)
-console.log(stats)
+console.log(statslocal)
   const { data: employees, isLoading } = useQuery({
     queryKey: ["employees"],
     queryFn: async () => {
@@ -111,14 +120,14 @@ console.log(stats)
           />
           <StatCard
             title="Today's Services"
-            value={(stats?.total_appointments || 0) + (stats?.dailyServices?.external || 0)}
+            value={(statslocal?.total_appointments || 0) + (statsdomiciel?.total_appointments || 0)}
             icon={<Car className="h-6 w-6 text-emerald-600" />}
             trend={+3}
             link="/admin/services"
           />
           <StatCard
             title="Today's Revenue"
-            value={revenue.total_revenue || 0}
+            value={revenue?.total_revenue || 0}
             isCurrency={true}
             icon={<DollarSign className="h-6 w-6 text-amber-600" />}
             trend={+8}
@@ -140,7 +149,7 @@ console.log(stats)
                   </div>
                   <div className="relative h-40 w-24 overflow-hidden rounded-t-lg bg-gradient-to-t from-cyan-600 to-cyan-500">
                     <div className="absolute bottom-2 left-0 right-0 text-center text-sm font-bold text-white">
-                       {stats?.total_appointments|| 0}
+                       {statslocal?.total_appointments|| 0}
                     </div>
                   </div>
                   <p className="mt-2 text-sm font-medium text-gray-700">Local</p>
@@ -151,7 +160,7 @@ console.log(stats)
                   </div>
                   <div className="relative h-28 w-24 overflow-hidden rounded-t-lg bg-gradient-to-t from-indigo-600 to-indigo-500">
                     <div className="absolute bottom-2 left-0 right-0 text-center text-sm font-bold text-white">
-                      {/* {stats?.total_appointments|| 0} */}
+                      {statsdomiciel?.total_appointments|| 0}
                     </div>
                   </div>
                   <p className="mt-2 text-sm font-medium text-gray-700">External</p>
