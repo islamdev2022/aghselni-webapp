@@ -624,7 +624,10 @@ def get_extern_appointments_stats(request):
     # Get count of appointments by status
     status_counts = appointments.values('status').annotate(count=Count('status'))
     
-    # Convert to a more user-friendly format
+    # Get count of appointments by wash type
+    wash_type_counts = appointments.values('wash_type').annotate(count=Count('wash_type'))
+    
+    # Convert status counts to a more user-friendly format
     status_stats = {
         'Pending': 0,
         'In Progress': 0,
@@ -635,6 +638,11 @@ def get_extern_appointments_stats(request):
     for item in status_counts:
         status_stats[item['status']] = item['count']
     
+    # Convert wash type counts to a dictionary
+    wash_type_stats = {}
+    for item in wash_type_counts:
+        wash_type_stats[item['wash_type']] = item['count']
+    
     # Get count of unique extern employees who have appointments on this date
     total_employees = appointments.values('extern_employee').distinct().count()
     
@@ -644,11 +652,10 @@ def get_extern_appointments_stats(request):
         'total_appointments': total_appointments,
         'total_employees_with_appointments': total_employees,
         'status_breakdown': status_stats,
+        'wash_type_breakdown': wash_type_stats,
     }
     
     return Response(response_data)
-
-
 
 @api_view(['GET'])
 @authentication_classes([CustomJWTAuthentication])
@@ -677,11 +684,20 @@ def get_intern_appointments_stats(request):
     # Get all appointments for the specified date
     appointments = AppointmentLocation.objects.filter(date=stats_date)
     
+    # Get count of appointments by wash type
+    wash_type_counts = appointments.values('wash_type').annotate(count=Count('wash_type'))
+    
+    
     # Get count of total appointments
     total_appointments = appointments.count()
     
     # Get count of appointments by status
     status_counts = appointments.values('status').annotate(count=Count('status'))
+    
+    # Convert wash type counts to a dictionary
+    wash_type_stats = {}
+    for item in wash_type_counts:
+        wash_type_stats[item['wash_type']] = item['count']
     
     # Convert to a more user-friendly format
     status_stats = {
@@ -702,6 +718,7 @@ def get_intern_appointments_stats(request):
         'date': stats_date.strftime('%Y-%m-%d'),
         'total_appointments': total_appointments,
         'status_breakdown': status_stats,
+        'wash_type_breakdown': wash_type_stats,
     }
     
     return Response(response_data)

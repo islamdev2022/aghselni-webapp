@@ -108,8 +108,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       hasSubmenu: true,
       submenuItems: [
         { name: "All Employees", path: "/admin/employees" },
-        { name: "Internal Employees", path: "/admin/intern_employees" },
-        { name: "External Employees", path: "/admin/extern_employees" },
         { name: "Add Employee", path: "/admin/employees/add" },
       ],
     },

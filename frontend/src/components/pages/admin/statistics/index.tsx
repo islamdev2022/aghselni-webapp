@@ -1,6 +1,4 @@
-"use client"
-
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { BarChart, LineChart, Calendar, ArrowUp } from "lucide-react"
 import api from "@/api"
@@ -8,37 +6,16 @@ import AdminLayout from "@/components/layouts/AdminLayout"
 import {
   BarChart as RechartsBarChart,
   Bar,
-  PieChart as RechartsPieChart,
-  Pie,
-  Cell,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
 } from "recharts"
 import AppointmentsByDayChart from "./AppointmentsByChart"
 import RevenueTrend from "./RevenueTrend"
-interface StatisticsData {
-  servicesByType: {
-    name: string
-    value: number
-  }[]
-  servicesByLocation: {
-    name: string
-    value: number
-  }[]
-  revenueByMonth: {
-    name: string
-    value: number
-  }[]
-  appointmentsByDay: {
-    name: string
-    completed: number
-    cancelled: number
-  }[]
-}
+import ServicesByTypePieChart from "./ServicesByTypePieChart"
+
 interface Stats {
   date: string
   total_appointments: number
@@ -47,7 +24,8 @@ interface Stats {
 
 export default function StatisticsPage() {
   const [timeRange, setTimeRange] = useState<"week" | "month" | "quarter" | "year">("month")
-
+  const [totalServices, setTotalServices] = useState(0)
+  const [totalRevenue, setTotalRevenue] = useState(0)
 
   // Fetch domicile appointments
   const { data: domicileAppointments, isLoading: isDomicileLoading } = useQuery({
@@ -70,7 +48,7 @@ export default function StatisticsPage() {
   console.log("domicile", domicileAppointments)
   console.log("intern", internAppointments)
 
-  const { data: statsLocal, isLoading: isLoadingLocal } = useQuery<Stats>({
+  const { data: statsLocal } = useQuery<Stats>({
     queryKey: ["admin-stats-local"],
     queryFn: async () => {
       const response = await api.get<Stats>("/api/admin/appointments/stats/i");
@@ -79,7 +57,7 @@ export default function StatisticsPage() {
   });
 
   // Second query for domicile stats
-  const { data: statsDomicile, isLoading: isLoadingDomicile } = useQuery<Stats>({
+  const { data: statsDomicile } = useQuery<Stats>({
     queryKey: ["admin-stats-domicile"],
     queryFn: async () => {
       const response = await api.get<Stats>("/api/admin/appointments/stats/e");
@@ -102,19 +80,18 @@ export default function StatisticsPage() {
       value: statsDomicile?.total_appointments || 0
     }
   ];
-
   console.log("displayData", displayData)
+   useEffect(() => {
+  if (internAppointments && domicileAppointments) {
+    setTotalServices(internAppointments.length + domicileAppointments.length);
+    setTotalRevenue(
+      (internAppointments.reduce((sum: number, appointment: any) => sum + (parseFloat(appointment.price) || 0), 0)) + 
+      (domicileAppointments.reduce((sum: number, appointment: any) => sum + (parseFloat(appointment.price) || 0), 0)))
+    console.log("Total Services", totalServices);
+    console.log("Total Revenue", totalRevenue);
+  }
+}, [internAppointments, domicileAppointments]);
 
-  const COLORS = ["#0891b2", "#6366f1", "#ec4899", "#f59e0b", "#10b981"]
-
-   const totalServices = internAppointments.length + domicileAppointments.length
-  const totalRevenue = (internAppointments ? internAppointments.reduce((sum: number, appointment: any) => sum + (parseFloat(appointment.price) || 0), 0) : 0) + 
-             (domicileAppointments ? domicileAppointments.reduce((sum: number, appointment: any) => sum + (parseFloat(appointment.price) || 0), 0) : 0);
-   console.log("total revenue", totalRevenue)
-  // const totalAppointments = displayData.appointmentsByDay.reduce(
-  //   (sum, item) => sum + item.completed + item.cancelled,
-  //   0,
-  // )
 
   return (
     <AdminLayout>
@@ -195,43 +172,7 @@ export default function StatisticsPage() {
             </div>
 
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-              <div className="rounded-xl bg-white p-6 shadow-sm">
-                <div className="mb-4 flex items-center justify-between">
-                  <h2 className="text-lg font-semibold text-gray-800">Services by Type</h2>
-                  <div className="rounded-lg bg-cyan-50 px-2.5 py-1 text-xs font-medium text-cyan-700">
-                    {timeRange === "week"
-                      ? "Last Week"
-                      : timeRange === "month"
-                        ? "Last Month"
-                        : timeRange === "quarter"
-                          ? "Last Quarter"
-                          : "Last Year"}
-                  </div>
-                </div>
-                <div className="h-64">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <RechartsPieChart>
-                      <Pie
-                        // data={displayData.servicesByType || []}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="value"
-                        label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                      >
-                        {/* {displayData.servicesByType.map((item, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))} */}
-                      </Pie>
-                      <Tooltip formatter={(value) => [`${value} services`, "Count"]} />
-                      <Legend />
-                    </RechartsPieChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-
+              <ServicesByTypePieChart timeRange={timeRange} />
               <div className="rounded-xl bg-white p-6 shadow-sm">
                 <div className="mb-4 flex items-center justify-between">
                   <h2 className="text-lg font-semibold text-gray-800">Services by Location</h2>
