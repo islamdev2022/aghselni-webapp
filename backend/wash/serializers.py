@@ -135,12 +135,6 @@ class InternEmployeeHistorySerializer(serializers.ModelSerializer):
         fields = ['id', 'client_name', 'cars_washed', 'appointment_details']
         
 
-
-
-
-
-# Add these to your serializers.py file
-
 # Client detail serializer
 class ClientDetailSerializer(serializers.ModelSerializer):
     class Meta:
@@ -197,3 +191,10 @@ class AdminSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data['password'] = make_password(validated_data['password'])
         return Admin.objects.create(**validated_data)
+    
+from .models import Feedback
+class FeedbackSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Feedback
+        fields = ['id', 'name', 'email', 'content', 'created_at', 'rating', 'approved']
+        read_only_fields = ['created_at', 'approved']

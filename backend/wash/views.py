@@ -823,3 +823,58 @@ def get_extern_appointments_revenue(request):
             {"error": "An error occurred while processing your request."},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+        
+from .models import Feedback
+from .serializers import FeedbackSerializer
+@api_view(['POST'])
+# @permission_classes([IsAuthenticated, IsClient])
+def create_feedback(request):
+    serializer = FeedbackSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated, IsAdmin])
+def approve_feedback(request, pk):
+    try:
+        feedback = Feedback.objects.get(pk=pk)
+    except Feedback.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+    
+    data = {'approved': request.data.get('approved', True)}
+    serializer = FeedbackSerializer(feedback, data=data, partial=True)
+    
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+# @permission_classes([IsAuthenticated, IsClient])
+def get_client_feedbacks(request):
+    """
+    Clients can see all approved feedback from everyone
+    """
+    feedbacks = Feedback.objects.filter(approved=True)
+    serializer = FeedbackSerializer(feedbacks, many=True)
+    return Response(serializer.data)
+
+@api_view(['GET'])
+# @permission_classes([IsAuthenticated, IsAdmin])
+def get_admin_feedbacks(request):
+    """
+    Admins can see all feedback and optionally filter by approval status
+    """
+    approved = request.query_params.get('approved', None)
+    
+    if approved is not None:
+        # Convert string to boolean
+        is_approved = approved.lower() == 'true'
+        feedbacks = Feedback.objects.filter(approved=is_approved)
+    else:
+        feedbacks = Feedback.objects.all()
+    
+    serializer = FeedbackSerializer(feedbacks, many=True)
+    return Response(serializer.data)

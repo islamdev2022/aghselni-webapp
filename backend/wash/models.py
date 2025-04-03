@@ -176,3 +176,17 @@ class InternEmployeeHistory(models.Model):
 
 # les rendez vous ta3 clientwahd  d dar extern w intern ykon fihm informations dylo (tp w lassm w les rendez vous d dar)
 #les appointments bin 2 get all  ndir hel get w hel update  f  2 api domicile w location wla f whda ida kdrt
+
+class Feedback(models.Model):
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    rating = models.IntegerField()
+    approved = models.BooleanField(default=False)
+    
+    def __str__(self):
+        return f"{self.name} - {self.rating}"
+    
+    class Meta:
+        ordering = ['-created_at']

@@ -8,5 +8,6 @@ admin.site.register(AppointmentDomicile)
 admin.site.register(AppointmentLocation)
 admin.site.register(ExternEmployeeHistory)
 admin.site.register(InternEmployeeHistory)
+admin.site.register(Feedback)
 
 admin.site.register(Admin)

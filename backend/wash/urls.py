@@ -26,7 +26,11 @@ from .views import (
     get_extern_appointments_stats,
     get_intern_appointments_stats,
     get_intern_appointments_revenue,
-    get_extern_appointments_revenue
+    get_extern_appointments_revenue,
+    get_client_feedbacks,
+    create_feedback,
+    get_admin_feedbacks,
+    approve_feedback,
 )
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
@@ -93,8 +97,13 @@ urlpatterns = [
     #calculate appointments revenues
     path('admin/appointments/revenue/i', get_intern_appointments_revenue, name='appointment_revenue'),
     path('admin/appointments/revenue/e', get_extern_appointments_revenue, name='appointment_revenue'),
-    
+    #get all feedbacks by admin and approve feedback by admin
+    path('admin/feedbacks/', get_admin_feedbacks, name='admin_feedbacks'),
+    path('admin/feedbacks/<int:pk>/approve/', approve_feedback, name='approve_feedback'),
     # client modify his informations
     path('client/profile/', update_client_profile, name='update_client_profile'),
     path('client/profile/<int:pk>/', get_delete_client, name='get_update_delete_client'),
+    # feedback  
+    path('feedback/',create_feedback, name='create_feedback'),
+    path('feedback/my-feedbacks/',get_client_feedbacks, name='client_feedbacks'),
 ]
