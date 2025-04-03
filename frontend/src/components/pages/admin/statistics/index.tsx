@@ -3,19 +3,10 @@ import { useQuery } from "@tanstack/react-query"
 import { BarChart, LineChart, Calendar, ArrowUp } from "lucide-react"
 import api from "@/api"
 import AdminLayout from "@/components/layouts/AdminLayout"
-import {
-  BarChart as RechartsBarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts"
 import AppointmentsByDayChart from "./AppointmentsByChart"
 import RevenueTrend from "./RevenueTrend"
 import ServicesByTypePieChart from "./ServicesByTypePieChart"
-
+import ServicesByLocationBarChart from "./ServicesByLocationBarChart"
 interface Stats {
   date: string
   total_appointments: number
@@ -166,54 +157,14 @@ export default function StatisticsPage() {
                 </div>
                 <div className="mt-4">
                   <h3 className="text-sm font-medium text-gray-500">Total Appointments</h3>
-                  {/* <p className="mt-1 text-2xl font-bold text-gray-800">{totalAppointments}</p> */}
+                  <p className="mt-1 text-2xl font-bold text-gray-800">{totalServices}</p>
                 </div>
               </div>
             </div>
 
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
               <ServicesByTypePieChart timeRange={timeRange} />
-              <div className="rounded-xl bg-white p-6 shadow-sm">
-                <div className="mb-4 flex items-center justify-between">
-                  <h2 className="text-lg font-semibold text-gray-800">Services by Location</h2>
-                  <div className="rounded-lg bg-cyan-50 px-2.5 py-1 text-xs font-medium text-cyan-700">
-                    {timeRange === "week"
-                      ? "Last Week"
-                      : timeRange === "month"
-                        ? "Last Month"
-                        : timeRange === "quarter"
-                          ? "Last Quarter"
-                          : "Last Year"}
-                  </div>
-                </div>
-                <div className="h-64">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <RechartsBarChart
-                      data={displayData}
-                      margin={{
-                        top: 5,
-                        right: 30,
-                        left: 20,
-                        bottom: 5,
-                      }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                      <XAxis dataKey="name" />
-                      <YAxis />
-                      <Tooltip 
-                        formatter={(value) => [`${value} services`, "Count"]} 
-                        contentStyle={{ backgroundColor: '#f5f5f5', borderRadius: '8px' }}
-                      />
-                      <Bar 
-                        dataKey="value" 
-                        fill="#0891b2" 
-                        radius={[4, 4, 0, 0]} 
-                        barSize={60} 
-                      />
-                    </RechartsBarChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
+              <ServicesByLocationBarChart timeRange={timeRange} />
             </div>
 
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
