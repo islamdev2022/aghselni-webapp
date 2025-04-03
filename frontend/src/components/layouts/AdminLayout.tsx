@@ -13,6 +13,7 @@ import {
   ChevronDown,
   Car,
   DollarSign,
+  MessageSquare
 } from "lucide-react"
 import api from "@/api"
 import {  useQueryClient } from "@tanstack/react-query";
@@ -122,15 +123,21 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       icon: <Calendar className="h-5 w-5" />,
     },
     {
-      name: "Services",
-      path: "/admin/services",
-      icon: <Car className="h-5 w-5" />,
-    },
-    {
       name: "Statistics",
       path: "/admin/statistics",
       icon: <BarChart className="h-5 w-5" />,
     },
+    {
+      name: "Client Feedbacks",
+      path: "/admin/feedback",
+      icon: <MessageSquare className="h-5 w-5" />,
+    },
+    {
+      name: "Services",
+      path: "/admin/services",
+      icon: <Car className="h-5 w-5" />,
+    },
+    
     {
       name: "Revenue",
       path: "/admin/revenue",

@@ -23,7 +23,7 @@ const StatisticsPage = lazy(() => import("./components/pages/admin/statistics/in
 const EmployeesPage = lazy(() => import("./components/pages/admin/employees/index"));
 const AddEmployeePage = lazy(() => import("./components/pages/admin/employees/add"));
 const AppointmentsTable = lazy(() => import("./components/admin/AppointmentsTable"));
-
+const FeedbackPage = lazy(() => import("./components/pages/admin/feedback/index"));
 // Loading fallback component
 const LoadingFallback = () => (
   <div className="flex justify-center items-center h-screen">
@@ -193,6 +193,7 @@ function App() {
                   <Route path="/admin/employees" element={<EmployeesPage />} />
                   <Route path="/admin/employees/add" element={<AddEmployeePage />} />
                   <Route path="/admin/appointments" element={<AppointmentsTable />} />
+                  <Route path="/admin/feedback" element={<FeedbackPage />} />
                   <Route path="/profile/admin/:id" element={<Profile />} />
                 </Route>
                 

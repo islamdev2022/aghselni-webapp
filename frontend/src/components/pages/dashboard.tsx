@@ -5,7 +5,7 @@ import AdminLayout from "../../components/layouts/AdminLayout"
 import StatCard from "../../components/admin/StatCard"
 import RevenueChart from "../../components/admin/RevenueChart"
 import AppointmentsTable from "../../components/admin/AppointmentsTable"
-
+import FeedbackSummaryWidget from "../../components/admin/FeedbackSummary"
 interface DashboardStats {
   date: string
   total_appointments: number
@@ -168,7 +168,7 @@ console.log(statslocal)
               </div>
             </div>
           </div>
-
+          <FeedbackSummaryWidget />
           <div className="rounded-xl bg-white p-6 shadow-sm">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-lg font-semibold text-gray-800">Revenue Overview</h2>
