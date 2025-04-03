@@ -1,418 +1,420 @@
-import React, { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CalendarIcon } from "lucide-react";
-import { format } from "date-fns";
-import { cn } from "@/lib/utils";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useClient } from "@/contexts/clientContext";
-import { useMutation } from "@tanstack/react-query";
-import api from "@/api";
-// import { useToast } from "@/components/ui/use-toast";
+"use client"
 
-// Define interface for form data
-interface HomeCarWashFormData {
-  carType: string;      // maps to car_type
-  carModel: string;     // maps to car_name
-  washType: string;     // maps to wash_type
-  address: string;      // maps to place
-  timeSlot: string;     // maps to time
-  date: Date | undefined;
-  price: number;        // maps to price
-  notes: string;
-  paymentMethod: string;
-  status?: string;      // maps to status with default 'Pending'
-}
+import { useState, useEffect } from "react"
+import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/button"
+import { Textarea } from "@/components/ui/textarea"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { CalendarIcon } from "lucide-react"
+import { format } from "date-fns"
+import { cn } from "@/lib/utils"
+import { Calendar } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { useClient } from "@/contexts/clientContext"
+import { useMutation } from "@tanstack/react-query"
+import api from "@/api"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm, ControllerRenderProps } from "react-hook-form"
+import * as z from "zod"
+import { Check, AlertCircle, Loader2 } from "lucide-react"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { Link } from "react-router-dom"
+const formSchema = z.object({
+  carType: z.string().min(1, "Car type is required"),
+  carModel: z.string().min(1, "Car model is required"),
+  washType: z.enum(["interior", "exterior", "full"]),
+  address: z.string().min(5, "Address is required"),
+  timeSlot: z.string().min(1, "Time slot is required"),
+  date: z.date({
+    required_error: "Date is required",
+  }),
+  price: z.number(),
+  notes: z.string().optional(),
+  paymentMethod: z.string(),
+})
 
 // API request payload interface
 interface AppointmentDomicilePayload {
-  car_type: string;
-  car_name: string;
-  wash_type: string;
-  place: string;
-  time: string;
-  price: number;
-  status?: string;
+  car_type: string
+  car_name: string
+  wash_type: string
+  place: string
+  time: string
+  price: number
+  status?: string
 }
 
 // Price calculation constants
 const BASE_PRICES = {
-  "Sedan": { interior: 150, exterior: 100, full: 200 },
-  "SUV": { interior: 200, exterior: 150, full: 300 },
-  "Truck": { interior: 250, exterior: 200, full: 400 },
-  "Compact": { interior: 120, exterior: 80, full: 180 },
-  "Minivan": { interior: 220, exterior: 170, full: 350 },
-};
+  Sedan: { interior: 150, exterior: 100, full: 200 },
+  SUV: { interior: 200, exterior: 150, full: 300 },
+  Truck: { interior: 250, exterior: 200, full: 400 },
+  Compact: { interior: 120, exterior: 80, full: 180 },
+  Minivan: { interior: 220, exterior: 170, full: 350 },
+}
 
 // Available time slots
-const TIME_SLOTS = [
-  "08:00 - 10:00",
-  "10:00 - 12:00",
-  "12:00 - 14:00",
-  "14:00 - 16:00",
-  "16:00 - 18:00",
-];
+const TIME_SLOTS = ["08:00 - 10:00", "10:00 - 12:00", "12:00 - 14:00", "14:00 - 16:00", "16:00 - 18:00"]
 
+// Replace the existing HomeCarWashForm component with this updated version
 export default function HomeCarWashForm() {
   // Call the client context
-  const { Client } = useClient();
-  // const { toast } = useToast();
+  const { Client } = useClient()
 
-  // Initialize form data with user details
-  const [formData, setFormData] = useState<HomeCarWashFormData>({
-    carType: "",
-    carModel: "",
-    washType: "full",
-    address: "",
-    timeSlot: "",
-    date: undefined,
-    price: 0,
-    notes: "",
-    paymentMethod: "cash"
-  });
+  // Add state for success message
+  const [showSuccess, setShowSuccess] = useState(false)
 
-  // Calculate price whenever car type or wash type changes
-  useEffect(() => {
-    if (formData.carType && formData.washType) {
-      const carPrices = BASE_PRICES[formData.carType as keyof typeof BASE_PRICES];
-      if (carPrices) {
-        setFormData((prev) => ({
-          ...prev,
-          price: carPrices[formData.washType as keyof typeof carPrices],
-        }));
-      }
-    }
-  }, [formData.carType, formData.washType]);
-
-  // Handle input changes
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  // Handle select changes
-  const handleSelectChange = (name: string, value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  // Handle radio group changes
-  const handleRadioChange = (value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      washType: value,
-    }));
-  };
-
-  // Handle date selection
-  const handleDateSelect = (date: Date | undefined) => {
-    setFormData((prev) => ({
-      ...prev,
-      date,
-    }));
-  };
-
-  // Create mutation for post request
-  const createAppointment = useMutation({
-    mutationFn: async (data: AppointmentDomicilePayload) => {
-      const response = await api.post('/api/appointments_domicile/create', data);
-      return response.data;
-    },
-    onSuccess: () => {
-      alert("Appointment created successfully");
-      // Reset form or redirect
-      resetForm();
-    },
-    onError: (error) => {
-      console.error("Appointment error:", error);
-      alert(error);
-    }
-  });
-
-  // Reset form to initial state
-  const resetForm = () => {
-    setFormData({
+  // Initialize form with react-hook-form and zod validation
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
       carType: "",
       carModel: "",
       washType: "full",
       address: "",
       timeSlot: "",
-      date: undefined,
-      price: 0,
       notes: "",
       paymentMethod: "cash",
-    });
-  };
+      price: 0,
+    },
+  })
+
+  // Watch for car type and wash type changes to calculate price
+  const carType = form.watch("carType")
+  const washType = form.watch("washType")
+
+  // Calculate price whenever car type or wash type changes
+  useEffect(() => {
+    if (carType && washType) {
+      const carPrices = BASE_PRICES[carType as keyof typeof BASE_PRICES]
+      if (carPrices) {
+        form.setValue("price", carPrices[washType as keyof typeof carPrices])
+      }
+    }
+  }, [carType, washType, form])
+
+  // Create mutation for post request
+  const createAppointment = useMutation({
+    mutationFn: async (data: AppointmentDomicilePayload) => {
+      const response = await api.post("/api/appointments_domicile/create", data)
+      return response.data
+    },
+    onSuccess: () => {
+      setShowSuccess(true)
+      // Reset form after 3 seconds
+      setTimeout(() => {
+        form.reset()
+        setShowSuccess(false)
+      }, 5000)
+    },
+    onError: (error) => {
+      console.error("Appointment error:", error)
+      form.setError("root", {
+        message: typeof error === "string" ? error : "Failed to create appointment. Please try again.",
+      })
+    },
+  })
 
   // Handle form submission
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Input validation
-    if (!formData.carType || !formData.carModel || !formData.address || !formData.timeSlot || !formData.date) {
-      alert("Please fill all required fields");
-      return;
-    }
-    
+  const onSubmit = (values: z.infer<typeof formSchema>) => {
     // Format time from timeSlot (e.g., "08:00 - 10:00" -> "08:00")
-    const time = formData.timeSlot.split(" - ")[0];
-    
+    const time = values.timeSlot.split(" - ")[0]
+
     // Format date and time for the API
     const payload: AppointmentDomicilePayload = {
-      car_type: formData.carType,
-      car_name: formData.carModel,
-      wash_type: formData.washType,
-      place: formData.address,
+      car_type: values.carType,
+      car_name: values.carModel,
+      wash_type: values.washType,
+      place: values.address,
       time: time, // Send only the start time
-      price: formData.price,
-      status: "Pending"
-    };
-    
-    console.log("Submitting appointment:", payload);
-    createAppointment.mutate(payload);
-  };
+      price: values.price,
+      status: "Pending",
+    }
+
+    console.log("Submitting appointment:", payload)
+    createAppointment.mutate(payload)
+  }
 
   return (
-    <Card className="max-w-2xl mx-auto bg-gradient-to-br from-cyan-200 to-cyan-600">
-      <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-bold text-white">Aghselni à Domicile</CardTitle>
-        <CardDescription className="text-white">
-          Schedule a car wash at your preferred location
+    <>
+    <h1 className="text-xl md:text-4xl font-bold text-center text-cyan-600 my-4">Book Your Home Car Wash Appointment</h1>
+    <Link to="/booking"
+    className="text-gray-500 hover:text-gray-700 transition duration-200 underline flex justify-center "
+    >Go back to options</Link>
+    <Card className="max-w-2xl mx-auto overflow-hidden shadow-lg mt-6 rounded-none sm:rounded-xl p-0">
+    <div className="bg-gradient-to-r from-cyan-500 to-blue-500 p-6">
+    <CardTitle className="text-2xl md:text-3xl font-bold text-white text-center">Aghselni à Domicile</CardTitle>
+        <CardDescription className="text-white text-center mt-2">
+          Schedule a premium car wash at your preferred location
         </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Personal Information */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium text-white">Personal Information</h3>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="fullName" className="text-white">Full Name</Label>
-                <Input
-                  id="fullName"
-                  name="fullName"
-                  value={Client?.full_name}
-                  className="bg-white/90"
-                  readOnly
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="phoneNumber" className="text-white">Phone Number</Label>
-                <Input
-                  id="phoneNumber"
-                  name="phoneNumber"
-                  value={Client?.phone}
-                  className="bg-white/90"
-                  readOnly
-                />
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-white">Email</Label>
-              <Input
-                id="email"
-                name="email"
-                value={Client?.email}
-                className="bg-white/90"
-                readOnly
-              />
-            </div>
-          </div>
+      </div>
 
-          {/* Car Information */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium text-white">Car Information</h3>
-            
-            <div className="space-y-2">
-              <Label htmlFor="carType" className="text-white">Car Type</Label>
-              <Select
-                onValueChange={(value: string) => handleSelectChange("carType", value)}
-                defaultValue={formData.carType}
-              >
-                <SelectTrigger className="bg-white/90">
-                  <SelectValue placeholder="Select car type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Sedan">Sedan</SelectItem>
-                  <SelectItem value="SUV">SUV</SelectItem>
-                  <SelectItem value="Truck">Truck</SelectItem>
-                  <SelectItem value="Compact">Compact</SelectItem>
-                  <SelectItem value="Minivan">Minivan</SelectItem>
-                </SelectContent>
-              </Select>
+      <CardContent className="p-6 pt-8">
+        {showSuccess && (
+          <Alert className="mb-6 bg-green-50 border-green-200">
+            <Check className="h-5 w-5 text-green-600" />
+            <AlertTitle className="text-green-800">Booking Confirmed!</AlertTitle>
+            <AlertDescription className="text-green-700">
+              Your car wash appointment has been scheduled successfully. You will receive a confirmation call shortly.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {form.formState.errors.root && (
+          <Alert className="mb-6 bg-red-50 border-red-200" variant="destructive">
+            <AlertCircle className="h-5 w-5" />
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>{form.formState.errors.root.message}</AlertDescription>
+          </Alert>
+        )}
+
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            {/* Personal Information */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium border-b pb-2">Personal Information</h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="fullName">Full Name</Label>
+                  <Input id="fullName" name="fullName" value={Client?.full_name} className="bg-gray-50" readOnly />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="phoneNumber">Phone Number</Label>
+                  <Input id="phoneNumber" name="phoneNumber" value={Client?.phone} className="bg-gray-50" readOnly />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input id="email" name="email" value={Client?.email} className="bg-gray-50" readOnly />
+              </div>
             </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="carModel" className="text-white">Car Name (Model & Brand)</Label>
-              <Input
-                id="carModel"
+
+            {/* Car Information */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium border-b pb-2">Car Information</h3>
+
+              <FormField
+                control={form.control}
+                name="carType"
+                render={({ field }: {field: ControllerRenderProps<z.infer<typeof formSchema>>}) => (
+                  <FormItem>
+                    <FormLabel>Car Type</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value?.toString()}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select car type" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Sedan">Sedan</SelectItem>
+                        <SelectItem value="SUV">SUV</SelectItem>
+                        <SelectItem value="Truck">Truck</SelectItem>
+                        <SelectItem value="Compact">Compact</SelectItem>
+                        <SelectItem value="Minivan">Minivan</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
                 name="carModel"
-                placeholder="e.g., Toyota Corolla"
-                value={formData.carModel}
-                onChange={handleChange}
-                className="bg-white/90"
+                render={({ field }: {field: ControllerRenderProps<z.infer<typeof formSchema>, "carModel">}) => (
+                  <FormItem>
+                    <FormLabel>Car Name (Model & Brand)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., Toyota Corolla" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="washType"
+                render={({ field }: {field: ControllerRenderProps<z.infer<typeof formSchema>, "washType">}) => (
+                  <FormItem className="space-y-3">
+                    <FormLabel>Wash Type</FormLabel>
+                    <FormControl>
+                      <RadioGroup
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        className="flex flex-col space-y-1"
+                      >
+                        <div className="flex items-center space-x-2 rounded-md border p-3 hover:bg-gray-50">
+                          <RadioGroupItem value="interior" id="interior" />
+                          <Label htmlFor="interior" className="flex-1 cursor-pointer">
+                            Interior Only
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-2 rounded-md border p-3 hover:bg-gray-50">
+                          <RadioGroupItem value="exterior" id="exterior" />
+                          <Label htmlFor="exterior" className="flex-1 cursor-pointer">
+                            Exterior Only
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-2 rounded-md border p-3 hover:bg-gray-50">
+                          <RadioGroupItem value="full" id="full" />
+                          <Label htmlFor="full" className="flex-1 cursor-pointer">
+                            Full Wash (Interior + Exterior)
+                          </Label>
+                        </div>
+                      </RadioGroup>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
             </div>
-            
-            <div className="space-y-2">
-              <Label className="text-white">Wash Type</Label>
-              <RadioGroup
-                value={formData.washType}
-                onValueChange={handleRadioChange}
-                className="flex flex-col space-y-1"
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="interior" id="interior" />
-                  <Label htmlFor="interior" className="text-white">Interior Only</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="exterior" id="exterior" />
-                  <Label htmlFor="exterior" className="text-white">Exterior Only</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="full" id="full" />
-                  <Label htmlFor="full" className="text-white">Full Wash (Interior + Exterior)</Label>
-                </div>
-              </RadioGroup>
-            </div>
-          </div>
 
-          {/* Service Details */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium text-white">Service Details</h3>
-            
-            <div className="space-y-2">
-              <Label htmlFor="address" className="text-white">Address / Location</Label>
-              <Input
-                id="address"
+            {/* Service Details */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium border-b pb-2">Service Details</h3>
+
+              <FormField
+                control={form.control}
                 name="address"
-                placeholder="Your full address"
-                value={formData.address}
-                onChange={handleChange}
-                className="bg-white/90"
+                render={({ field }: {field: ControllerRenderProps<z.infer<typeof formSchema>, "address">}) => (
+                  <FormItem>
+                    <FormLabel>Address / Location</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Your full address" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="date" className="text-white">Date</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal bg-white/90",
-                        !formData.date && "text-gray-500"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {formData.date ? format(formData.date, "PPP") : <span>Pick a date</span>}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar
-                      mode="single"
-                      selected={formData.date}
-                      onSelect={handleDateSelect}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="timeSlot" className="text-white">Preferred Time Slot</Label>
-                <Select
-                  onValueChange={(value: string) => handleSelectChange("timeSlot", value)}
-                  defaultValue={formData.timeSlot}
-                >
-                  <SelectTrigger className="bg-white/90">
-                    <SelectValue placeholder="Select time" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {TIME_SLOTS.map((slot: string) => (
-                      <SelectItem key={slot} value={slot}>
-                        {slot}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="notes" className="text-white">Additional Notes (Optional)</Label>
-              <Textarea
-                id="notes"
-                name="notes"
-                placeholder="Any special instructions or requirements"
-                value={formData.notes}
-                onChange={handleChange}
-                className="bg-white/90"
-              />
-            </div>
-          </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="date"
+                  render={({ field }: {field: ControllerRenderProps<z.infer<typeof formSchema>, "date">}) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel>Date</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              className={cn(
+                                "w-full justify-start text-left font-normal",
+                                !field.value && "text-muted-foreground",
+                              )}
+                            >
+                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0">
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={field.onChange}
+                            initialFocus
+                            disabled={(date) => date < new Date()}
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-          {/* Payment Information */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium text-white">Payment Information</h3>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="price" className="text-white">Price (MAD)</Label>
-                <Input
-                  id="price"
-                  name="price"
-                  value={formData.price}
-                  className="bg-white/90 font-semibold"
-                  readOnly
+                <FormField
+                  control={form.control}
+                  name="timeSlot"
+                  render={({ field }: {field: ControllerRenderProps<z.infer<typeof formSchema>, "timeSlot">}) => (                    <FormItem>
+                      <FormLabel>Preferred Time Slot</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select time" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {TIME_SLOTS.map((slot: string) => (
+                            <SelectItem key={slot} value={slot}>
+                              {slot}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
               </div>
-              
-              {/* <div className="space-y-2">
-                <Label htmlFor="paymentMethod" className="text-white">Payment Method</Label>
-                <Select
-                  onValueChange={(value: string) => handleSelectChange("paymentMethod", value)}
-                  defaultValue={formData.paymentMethod}
-                >
-                  <SelectTrigger className="bg-white/90">
-                    <SelectValue placeholder="Select payment method" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="cash">Cash</SelectItem>
-                    <SelectItem value="online">Online Payment</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div> */}
-            </div>
-          </div>
 
-          {/* Submit Button */}
-          <Button 
-            type="submit" 
-            className="w-full bg-cyan-800 hover:bg-cyan-900 text-white"
-            disabled={createAppointment.isPending}
-          >
-            {createAppointment.isPending ? "Processing..." : "Schedule Home Car Wash"}
-          </Button>
-        </form>
+              <FormField
+                control={form.control}
+                name="notes"
+                render={({ field }: {field: ControllerRenderProps<z.infer<typeof formSchema>, "notes">}) => (                  <FormItem>
+                    <FormLabel>Additional Notes (Optional)</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Any special instructions or requirements"
+                        className="resize-none"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {/* Payment Information */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium border-b pb-2">Payment Information</h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="price"
+                  render={({ field }: {field: ControllerRenderProps<z.infer<typeof formSchema>, "price">}) => (
+                      <FormItem>
+                      <FormLabel>Price (MAD)</FormLabel>
+                      <FormControl>
+                        <Input type="number" className="font-semibold" readOnly {...field} value={field.value || 0} />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+
+            {/* Submit Button */}
+            <Button
+              type="submit"
+              className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white py-6 cursor-pointer"
+              disabled={createAppointment.isPending}
+            >
+              {createAppointment.isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin cursor-progress" />
+                  Processing...
+                </>
+              ) : (
+                "Schedule Home Car Wash"
+              )}
+            </Button>
+          </form>
+        </Form>
       </CardContent>
     </Card>
-  );
+    </>
+  )
 }
+

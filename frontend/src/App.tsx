@@ -13,6 +13,8 @@ const InternEmp = lazy(() => import("./components/pages/InternEmp"));
 const Admin = lazy(() => import("./components/pages/dashboard"));
 import Profile from "./components/Profile";
 const Booking = lazy(() => import("./components/Booking"));
+const AppointmentCarWashForm = lazy(() => import("./components/Forms/AppointmentCarWashForm"));
+const HomeCarWashForm = lazy(() => import("./components/Forms/HomeCarWashForm"));
 const Login = lazy(() => import("./components/Login"));
 const Signup = lazy(() => import("./components/SignUp"));
 const NotFound = lazy(() => import("./NotFound"));
@@ -32,7 +34,7 @@ const LoadingFallback = () => (
 // Layout component that conditionally renders Navbar and Footer
 const Layout = ({ children }: { children: ReactNode }) => {
   const location = useLocation();
-  const authRoutes = ["/login/client", "/login/admin", "/login/extern_employee", "/login/intern_employee", "/signup" ,"/admin" ,"/extern-employee" ,"/intern-employee" ];
+  const authRoutes = ["/login/client", "/login/admin", "/login/extern_employee", "/login/intern_employee", "/signup" ,"/admin" ,"/extern-employee" ,"/intern-employee","/booking/local","/booking/domicile" ];
   
   // Check if current path starts with any auth route
   const isAuthRoute = authRoutes.some(route => 
@@ -163,6 +165,8 @@ function App() {
                 <Route element={<ProtectedRoute userType="client" />}>
                 
                   <Route path="/booking" element={<Booking />} />
+                  <Route path="/booking/local" element={<AppointmentCarWashForm/>} />
+                  <Route path="/booking/domicile" element={<HomeCarWashForm />} />
                   <Route path="/profile/client/:id" element={<Profile />} />
                   <Route path="/history/:id" element={<p>Client History</p>} />
                 
