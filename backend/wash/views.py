@@ -308,6 +308,50 @@ def get_update_delete_intern_employee(request, pk):
         return Response({"error": "الموظف غير موجود"}, status=status.HTTP_404_NOT_FOUND)
 
 
+@api_view(['GET'])
+@authentication_classes([CustomJWTAuthentication])
+@permission_classes([IsAuthenticated, IsExternEmployee])
+def get_pending_appointments(request):
+    """
+    View for external employees to see all 'Pending' appointments,
+    even those not assigned to them yet.
+    """
+    pending_appointments = AppointmentDomicile.objects.filter(status='Pending')
+    serializer = AppointmentDomicileSerializer(pending_appointments, many=True)
+    return Response(serializer.data)
+
+
+@api_view(['POST'])
+@authentication_classes([CustomJWTAuthentication])
+@permission_classes([IsAuthenticated, IsExternEmployee])
+def claim_appointment(request, appointment_id):
+    """
+    External employee claims a pending appointment.
+    Assigns it to them and updates the status to 'In Progress'.
+    """
+    try:
+        appointment = AppointmentDomicile.objects.get(id=appointment_id)
+        
+        if appointment.status != 'Pending':
+            return Response(
+                {"error": "لا يمكن حجز موعد غير قيد الانتظار."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Assign current employee
+        appointment.extern_employee = request.user  # assuming user is linked to ExternEmployee
+        appointment.status = 'In Progress'
+        appointment.save()
+
+        serializer = AppointmentDomicileSerializer(appointment)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    except AppointmentDomicile.DoesNotExist:
+        return Response(
+            {"error": "الموعد غير موجود"},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
 # Get and create appointments for extern employee
 @api_view(['GET', 'POST'])
 @authentication_classes([CustomJWTAuthentication])

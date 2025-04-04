@@ -8,7 +8,9 @@ import api from "./api";
 import {ClientProvider} from "./contexts/clientContext";
 // Lazy load components
 const LandingPage = lazy(() => import("./components/pages/LandingPage"));
-const ExternEmp = lazy(() => import("./components/pages/ExternEmp"));
+const ExternEmp = lazy(() => import("./components/pages/extern-employee/dashboard"));
+const ExternEmpProfile = lazy(() => import("./components/pages/extern-employee/profile"));
+const ExtEmpHistory = lazy(() => import("./components/pages/extern-employee/ExtEmpHistory"));
 const InternEmp = lazy(() => import("./components/pages/InternEmp"));
 const Admin = lazy(() => import("./components/pages/dashboard"));
 import Profile from "./components/Profile";
@@ -176,7 +178,8 @@ function App() {
                 {/* External Employee Routes */}
                 <Route element={<ProtectedRoute userType="extern_employee" />}>
                   <Route path="/extern_employee" element={<ExternEmp />} />
-                  <Route path="/profile/extern_employee/:id" element={<Profile />} />
+                  <Route path="/extern_employee/profile" element={<ExternEmpProfile />} />
+                  <Route path="/extern_employee/history" element={<ExtEmpHistory/>} />
                 </Route>
                 
                 {/* Internal Employee Routes */}

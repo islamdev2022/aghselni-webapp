@@ -96,7 +96,7 @@ from .models import ExternEmployeeHistory, InternEmployeeHistory, AppointmentDom
 class ExternEmployeeDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = ExternEmployee
-        fields = ['id', 'full_name', 'phone', 'age', 'final_rating', 'email']
+        fields = ['id', 'full_name', 'phone', 'age', 'final_rating', 'email','profile_image']
 
 # Serializer for appointment domicile information
 class AppointmentDomicileSerializer(serializers.ModelSerializer):
