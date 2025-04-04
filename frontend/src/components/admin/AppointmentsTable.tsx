@@ -4,6 +4,7 @@ import { useState } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { Clock, MapPin, User, Check, X, Filter } from "lucide-react"
 import api from "@/api"
+import AdminLayout from '@/components/layouts/AdminLayout';
 
 type AppointmentType = "all" | "domicile" | "intern"
 
@@ -97,7 +98,9 @@ export default function AppointmentsTable() {
   const displayAppointments = getFilteredAppointments()
 
   return (
-    <div>
+    <AdminLayout>
+      <div className="space-y-6 p-6">
+
       {/* Filter controls */}
       <div className="mb-4 flex items-center justify-end">
         <div className="flex items-center space-x-2">
@@ -195,7 +198,8 @@ export default function AppointmentsTable() {
           </tbody>
         </table>
       </div>
-    </div>
+      </div>
+    </AdminLayout>
   )
 }
 

@@ -104,8 +104,6 @@ const Navbar = () => {
       behavior: "smooth",
     });
   }
-// console.log(userData);
-console.log(client)
   // Authentication buttons based on login status
   const AuthButtons = () => {
     if (isLoading) {

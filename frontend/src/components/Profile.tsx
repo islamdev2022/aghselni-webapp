@@ -547,7 +547,7 @@ const Profile = () => {
                     Deleting...
                   </span>
                 ) : (
-                  "Delete Client"
+                  "Delete Account"
                 )}
               </button>
             </div>

@@ -18,8 +18,6 @@ const Testimonials = () => {
       return response.data
     },
   })
-  console.log(feedbacks)
-
   const renderStars = (rating: number) => {
     return (
       <div className="flex">

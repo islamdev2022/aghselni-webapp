@@ -35,13 +35,11 @@ export default function FeedbackPage() {
   // Update feedback status mutation
   const updateStatusMutation = useMutation({
     mutationFn: async ({ id, approved }: { id: number, approved: boolean }) => {
-        console.log('trying to update with id', id)
         const response = await api.put(`/api/admin/feedbacks/${id}/approve/`, { approved });
         return response.data;
       },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-feedback'] });
-      console.log('updated successfully' )
       if (showDetailModal && selectedFeedback) {
         setSelectedFeedback(prev => prev ? { ...prev as any } : null);
       }
@@ -51,8 +49,6 @@ export default function FeedbackPage() {
         }
   });
 
-  console.log(feedbackData)
-  console.log("rerzere")
 
   const displayFeedback = feedbackData || [];
 

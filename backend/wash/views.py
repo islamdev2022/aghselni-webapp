@@ -519,6 +519,8 @@ def get_update_appointment_location(request, appointment_id=None):
     return Response({"error": "طلب غير صالح"}, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
+@authentication_classes([CustomJWTAuthentication])
+@permission_classes([IsAuthenticated, IsAdmin])
 def register_admin(request):
     serializer = AdminSerializer(data=request.data)
     if serializer.is_valid():

@@ -24,17 +24,17 @@ const EmployeesPage = lazy(() => import("./components/pages/admin/employees/inde
 const AddEmployeePage = lazy(() => import("./components/pages/admin/employees/add"));
 const AppointmentsTable = lazy(() => import("./components/admin/AppointmentsTable"));
 const FeedbackPage = lazy(() => import("./components/pages/admin/feedback/index"));
+const Settings = lazy(() => import("./components/pages/admin/settings/index"));
+import Loading from "./loading";
 // Loading fallback component
 const LoadingFallback = () => (
-  <div className="flex justify-center items-center h-screen">
-    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-  </div>
+  <Loading/>
 );
 
 // Layout component that conditionally renders Navbar and Footer
 const Layout = ({ children }: { children: ReactNode }) => {
   const location = useLocation();
-  const authRoutes = ["/login/client", "/login/admin", "/login/extern_employee", "/login/intern_employee", "/signup" ,"/admin" ,"/extern-employee" ,"/intern-employee","/booking/local","/booking/domicile" ];
+  const authRoutes = ["/login/client", "/login/admin", "/login/extern_employee", "/login/intern_employee", "/signup" ,"/admin" ,"/extern_employee" ,"/intern_employee","/booking/local","/booking/domicile" ];
   
   // Check if current path starts with any auth route
   const isAuthRoute = authRoutes.some(route => 
@@ -194,6 +194,7 @@ function App() {
                   <Route path="/admin/employees/add" element={<AddEmployeePage />} />
                   <Route path="/admin/appointments" element={<AppointmentsTable />} />
                   <Route path="/admin/feedback" element={<FeedbackPage />} />
+                  <Route path="/admin/settings" element={<Settings />} />
                   <Route path="/profile/admin/:id" element={<Profile />} />
                 </Route>
                 
