@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query"
 import { MessageSquare, Star, AlertCircle, CheckCircle } from "lucide-react"
 import { Link } from "react-router-dom"
 import api from "@/api"
-
+import LoadingSkeleton from "@/LoadingSkeleton"
 interface FeedbackSummary {
   total: number
   not_approved: number
@@ -31,17 +31,7 @@ export default function FeedbackSummaryWidget() {
 
   if (isLoading) {
     return (
-      <div className="rounded-xl bg-white p-6 shadow-sm">
-        <div className="animate-pulse">
-          <div className="h-6 w-1/3 bg-gray-200 rounded mb-4"></div>
-          <div className="h-10 bg-gray-200 rounded mb-4"></div>
-          <div className="grid grid-cols-3 gap-4">
-            <div className="h-20 bg-gray-200 rounded"></div>
-            <div className="h-20 bg-gray-200 rounded"></div>
-            <div className="h-20 bg-gray-200 rounded"></div>
-          </div>
-        </div>
-      </div>
+      <LoadingSkeleton/>
     )
   }
 

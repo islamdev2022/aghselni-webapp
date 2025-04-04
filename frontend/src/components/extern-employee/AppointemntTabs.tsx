@@ -174,9 +174,9 @@ console.log("claimed" , claimedAppointments)
         <div>
           <h3 className="mb-4 text-lg font-semibold text-gray-800">Available Appointments</h3>
           {isPendingLoading ? (
-             <div className="flex h-40 items-center justify-center">
-             <Loading />
-         </div>
+            <div className="flex h-40 items-center justify-center">
+                <Loading />
+            </div>
           ) : pendingAppointments && pendingAppointments.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="w-full border-collapse">
