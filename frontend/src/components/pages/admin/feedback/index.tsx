@@ -1,19 +1,18 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { MessageSquare, Search, Star,  CheckCircle, AlertCircle,  User, Calendar, Eye, X } from 'lucide-react';
+import { MessageSquare, Search, Star,  CheckCircle, AlertCircle,  User, Calendar, X } from 'lucide-react';
 import { format } from 'date-fns';
 import api from '@/api';
 import AdminLayout from '@/components/layouts/AdminLayout';
 
 interface Feedback {
   id: number;
-  client_name: string;
-  client_email: string;
-  subject: string;
-  message: string;
+  name: string;
+  email: string;
+  content: string;
   rating: number;
   created_at: string;
-  status: 'unread' | 'read' | 'resolved';
+  approved : boolean
 }
 
 export default function FeedbackPage() {
@@ -28,130 +27,71 @@ export default function FeedbackPage() {
   const { data: feedbackData, isLoading } = useQuery({
     queryKey: ['admin-feedback'],
     queryFn: async () => {
-      const response = await api.get<Feedback[]>('/api/admin/feedback/');
+      const response = await api.get<Feedback[]>('/api/admin/feedbacks/');
       return response.data;
     }
   });
 
   // Update feedback status mutation
   const updateStatusMutation = useMutation({
-    mutationFn: async ({ id, status }: { id: number; status: string }) => {
-      const response = await api.patch(`/api/admin/feedback/${id}/`, { status });
-      return response.data;
-    },
+    mutationFn: async ({ id, approved }: { id: number, approved: boolean }) => {
+        console.log('trying to update with id', id)
+        const response = await api.put(`/api/admin/feedbacks/${id}/approve/`, { approved });
+        return response.data;
+      },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-feedback'] });
+      console.log('updated successfully' )
       if (showDetailModal && selectedFeedback) {
-        setSelectedFeedback(prev => prev ? { ...prev, status: updateStatusMutation.variables?.status as any } : null);
+        setSelectedFeedback(prev => prev ? { ...prev as any } : null);
       }
-    }
+    },
+    onError: (error) => {
+        console.error('Error updating feedback status:', error);
+        }
   });
 
-  // Sample data for demonstration
-  const sampleFeedback: Feedback[] = [
-    {
-      id: 1,
-      client_name: 'John Smith',
-      client_email: 'john.smith@example.com',
-      subject: 'Great service experience',
-      message: 'I wanted to thank your team for the excellent car wash service. My car looks brand new! The staff was professional and friendly. I will definitely be coming back and recommending your service to friends and family.',
-      rating: 5,
-      created_at: '2025-03-15T10:30:00Z',
-      status: 'unread'
-    },
-    {
-      id: 2,
-      client_name: 'Sarah Johnson',
-      client_email: 'sarah.johnson@example.com',
-      subject: 'Suggestion for improvement',
-      message: 'While I was generally satisfied with the service, I think the waiting area could use some improvements. Perhaps adding more comfortable seating and some magazines would make the wait more pleasant. Otherwise, the car wash itself was great!',
-      rating: 4,
-      created_at: '2025-03-14T14:45:00Z',
-      status: 'read'
-    },
-    {
-      id: 3,
-      client_name: 'Michael Brown',
-      client_email: 'michael.brown@example.com',
-      subject: 'Disappointed with service',
-      message: 'I regret to inform you that I was not satisfied with my recent car wash. There were still some dirty spots on the windows and the interior vacuum service missed several areas. I hope you can improve your quality control in the future.',
-      rating: 2,
-      created_at: '2025-03-13T09:15:00Z',
-      status: 'resolved'
-    },
-    {
-      id: 4,
-      client_name: 'Emily Davis',
-      client_email: 'emily.davis@example.com',
-      subject: 'Question about membership',
-      message: "I recently used your services and was very impressed. I'm interested in your monthly membership program but couldn't find detailed information on your website. Could you please provide more details about the different membership tiers and what they include?",
-      rating: 5,
-      created_at: '2025-03-12T16:20:00Z',
-      status: 'unread'
-    },
-    {
-      id: 5,
-      client_name: 'David Wilson',
-      client_email: 'david.wilson@example.com',
-      subject: 'Feedback on mobile app',
-      message: "I've been using your mobile app to book appointments and I think it's very convenient. However, I've noticed that sometimes the appointment times shown in the app don't match what's available when I arrive. It would be great if this could be fixed.",
-      rating: 3,
-      created_at: '2025-03-11T11:10:00Z',
-      status: 'read'
-    }
-  ];
+  console.log(feedbackData)
+  console.log("rerzere")
 
-  const displayFeedback = feedbackData || sampleFeedback;
+  const displayFeedback = feedbackData || [];
 
 
 const filteredFeedback: Feedback[] = displayFeedback.filter((feedback: Feedback): boolean => {
     const matchesSearch: boolean = 
-        feedback.client_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-        feedback.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        feedback.message.toLowerCase().includes(searchTerm.toLowerCase());
+        feedback.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        feedback.content.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesStatus: boolean = statusFilter === 'all' || feedback.status === statusFilter;
     
     const matchesRating: boolean = ratingFilter === null || feedback.rating === ratingFilter;
     
-    return matchesSearch && matchesStatus && matchesRating;
+    return matchesSearch && matchesRating;
 });
 
   const handleViewFeedback = (feedback: Feedback) => {
     setSelectedFeedback(feedback);
     setShowDetailModal(true);
-    
-    // If feedback is unread, mark it as read
-    if (feedback.status === 'unread') {
-      updateStatusMutation.mutate({ id: feedback.id, status: 'read' });
-    }
   };
 
-  const handleUpdateStatus = (id: number, status: string) => {
-    updateStatusMutation.mutate({ id, status });
+  const handleUpdateStatus = (id: number, approved: boolean) => {
+    updateStatusMutation.mutate({ id, approved });
   };
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: boolean) => {
     switch (status) {
-      case 'unread':
+      case false:
         return (
           <span className="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-700">
             <AlertCircle className="mr-1 h-3 w-3" />
-            Unread
+            Not Approved
           </span>
         );
-      case 'read':
-        return (
-          <span className="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700">
-            <Eye className="mr-1 h-3 w-3" />
-            Read
-          </span>
-        );
-      case 'resolved':
+
+      case true:
         return (
           <span className="inline-flex items-center rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-700">
             <CheckCircle className="mr-1 h-3 w-3" />
-            Resolved
+            Approved
           </span>
         );
       default:
@@ -234,24 +174,23 @@ const filteredFeedback: Feedback[] = displayFeedback.filter((feedback: Feedback)
                   <div 
                     key={feedback.id} 
                     className={`p-4 transition hover:bg-gray-50 cursor-pointer ${
-                      feedback.status === 'unread' ? 'bg-cyan-50/30' : ''
+                      feedback.approved === false ? 'bg-cyan-50/30' : ''
                     }`}
                     onClick={() => handleViewFeedback(feedback)}
                   >
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <h3 className="text-sm font-medium text-gray-900 truncate">{feedback.subject}</h3>
-                          {getStatusBadge(feedback.status)}
+                          {getStatusBadge(feedback.approved)}
                         </div>
                         <div className="mt-1 flex items-center text-xs text-gray-500">
                           <User className="mr-1 h-3 w-3" />
-                          <span className="truncate">{feedback.client_name}</span>
+                          <span className="truncate">{feedback.name}</span>
                           <span className="mx-1">•</span>
                           <Calendar className="mr-1 h-3 w-3" />
                           <span>{format(new Date(feedback.created_at), 'MMM d, yyyy')}</span>
                         </div>
-                        <p className="mt-2 text-sm text-gray-600 line-clamp-2">{feedback.message}</p>
+                        <p className="mt-2 text-sm text-gray-600 line-clamp-2">{feedback.content}</p>
                       </div>
                       <div className="flex flex-col items-end gap-2">
                         {renderStars(feedback.rating)}
@@ -312,7 +251,7 @@ const filteredFeedback: Feedback[] = displayFeedback.filter((feedback: Feedback)
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="w-full max-w-2xl rounded-lg bg-white p-6 shadow-xl">
             <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-lg font-bold text-gray-900">{selectedFeedback.subject}</h3>
+              {/* <h3 className="text-lg font-bold text-gray-900">{selectedFeedback.subject}</h3> */}
               <button 
                 onClick={() => setShowDetailModal(false)}
                 className="rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-500"
@@ -325,12 +264,12 @@ const filteredFeedback: Feedback[] = displayFeedback.filter((feedback: Feedback)
               <div className="flex items-center">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-cyan-100 text-cyan-700">
                   <span className="text-sm font-medium">
-                    {selectedFeedback.client_name.split(' ').map(n => n[0]).join('')}
+                    {selectedFeedback.name.split(' ').map(n => n[0]).join('')}
                   </span>
                 </div>
                 <div className="ml-3">
-                  <p className="text-sm font-medium text-gray-900">{selectedFeedback.client_name}</p>
-                  <p className="text-sm text-gray-500">{selectedFeedback.client_email}</p>
+                  <p className="text-sm font-medium text-gray-900">{selectedFeedback.name}</p>
+                  <p className="text-sm text-gray-500"> <a href={`mailto:${selectedFeedback.email}`}>{selectedFeedback.email}</a></p>
                 </div>
               </div>
               <div className="flex flex-col items-end">
@@ -345,35 +284,27 @@ const filteredFeedback: Feedback[] = displayFeedback.filter((feedback: Feedback)
             </div>
             
             <div className="mb-6 rounded-lg bg-gray-50 p-4">
-              <p className="whitespace-pre-wrap text-sm text-gray-700">{selectedFeedback.message}</p>
+              <p className="whitespace-pre-wrap text-sm text-gray-700">{selectedFeedback.content}</p>
             </div>
             
             <div className="flex items-center justify-between">
               <div>
                 <span className="mr-2 text-sm font-medium text-gray-700">Status:</span>
-                {getStatusBadge(selectedFeedback.status)}
+                {getStatusBadge(selectedFeedback.approved)}
               </div>
               <div className="flex space-x-2">
-                {selectedFeedback.status !== 'resolved' && (
+                {selectedFeedback.approved === false ? (
                   <button
-                    onClick={() => handleUpdateStatus(selectedFeedback.id, 'resolved')}
+                    onClick={() => handleUpdateStatus(selectedFeedback.id, true)}
                     disabled={updateStatusMutation.isPending}
                     className="flex items-center rounded-lg bg-green-50 px-3 py-1.5 text-xs font-medium text-green-700 hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1"
                   >
                     <CheckCircle className="mr-1 h-3.5 w-3.5" />
-                    Mark as Resolved
+                    Approve
                   </button>
-                )}
-                {selectedFeedback.status === 'unread' && (
-                  <button
-                    onClick={() => handleUpdateStatus(selectedFeedback.id, 'read')}
-                    disabled={updateStatusMutation.isPending}
-                    className="flex items-center rounded-lg bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
-                  >
-                    <Eye className="mr-1 h-3.5 w-3.5" />
-                    Mark as Read
-                  </button>
-                )}
+                ) : <p className="flex items-center rounded-lg bg-green-50 px-3 py-1.5 text-xs font-medium text-green-700 hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1"
+                >Already Approved</p> }
+
                 <button
                   onClick={() => setShowDetailModal(false)}
                   className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-1"

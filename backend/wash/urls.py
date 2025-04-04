@@ -31,6 +31,7 @@ from .views import (
     create_feedback,
     get_admin_feedbacks,
     approve_feedback,
+    feedback_summary
 )
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
@@ -100,10 +101,11 @@ urlpatterns = [
     #get all feedbacks by admin and approve feedback by admin
     path('admin/feedbacks/', get_admin_feedbacks, name='admin_feedbacks'),
     path('admin/feedbacks/<int:pk>/approve/', approve_feedback, name='approve_feedback'),
+    path('admin/feedbacks/summary/', feedback_summary, name='feedback-summary'),
     # client modify his informations
     path('client/profile/', update_client_profile, name='update_client_profile'),
     path('client/profile/<int:pk>/', get_delete_client, name='get_update_delete_client'),
     # feedback  
     path('feedback/',create_feedback, name='create_feedback'),
-    path('feedback/my-feedbacks/',get_client_feedbacks, name='client_feedbacks'),
+    path('feedback/all/',get_client_feedbacks, name='client_feedbacks'),
 ]

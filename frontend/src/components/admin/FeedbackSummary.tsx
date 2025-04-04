@@ -1,39 +1,33 @@
 import { useQuery } from "@tanstack/react-query"
-import { MessageSquare, Star, AlertCircle, CheckCircle, Eye, TrendingUp, TrendingDown } from "lucide-react"
+import { MessageSquare, Star, AlertCircle, CheckCircle } from "lucide-react"
 import { Link } from "react-router-dom"
-import api from "../../api"
+import api from "@/api"
 
 interface FeedbackSummary {
   total: number
-  unread: number
-  read: number
+  not_approved: number
+  approved: number
   resolved: number
-  averageRating: number
-  recentTrend: "up" | "down" | "stable"
-  trendPercentage: number
+  average_rating: number
+
 }
 
 export default function FeedbackSummaryWidget() {
   const { data: summary, isLoading } = useQuery({
     queryKey: ["feedback-summary"],
     queryFn: async () => {
-      const response = await api.get<FeedbackSummary>("/api/admin/feedback/summary")
+      const response = await api.get<FeedbackSummary>("/api/admin/feedbacks/summary/")
       return response.data
     },
   })
-
-  // Sample data for demonstration
-  const sampleSummary: FeedbackSummary = {
-    total: 42,
-    unread: 8,
-    read: 15,
-    resolved: 19,
-    averageRating: 4.2,
-    recentTrend: "up",
-    trendPercentage: 12,
+    console.log("summary", summary)
+  const displaySummary: FeedbackSummary = summary || {
+    total: 0,
+    not_approved: 0,
+    approved: 0,
+    resolved: 0,
+    average_rating: 0
   }
-
-  const displaySummary = summary || sampleSummary
 
   if (isLoading) {
     return (
@@ -73,57 +67,32 @@ export default function FeedbackSummaryWidget() {
             {[...Array(5)].map((_, i) => (
               <Star
                 key={i}
-                className={`h-4 w-4 ${i < Math.round(displaySummary.averageRating) ? "fill-amber-400 text-amber-400" : "text-gray-300"}`}
+                className={`h-4 w-4 ${i < Math.round(displaySummary.average_rating) ? "fill-amber-400 text-amber-400" : "text-gray-300"}`}
               />
             ))}
           </div>
-          <span className="ml-2 text-sm font-medium text-gray-700">{displaySummary.averageRating.toFixed(1)}</span>
-          <div
-            className={`ml-3 flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-              displaySummary.recentTrend === "up"
-                ? "bg-green-50 text-green-700"
-                : displaySummary.recentTrend === "down"
-                  ? "bg-red-50 text-red-700"
-                  : "bg-gray-50 text-gray-700"
-            }`}
-          >
-            {displaySummary.recentTrend === "up" ? (
-              <TrendingUp className="mr-1 h-3 w-3" />
-            ) : displaySummary.recentTrend === "down" ? (
-              <TrendingDown className="mr-1 h-3 w-3" />
-            ) : null}
-            {displaySummary.trendPercentage}%
-          </div>
+          <span className="ml-2 text-sm font-medium text-gray-700">{displaySummary.average_rating.toFixed()}</span>
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 gap-4">
         <div className="rounded-lg bg-amber-50 p-3">
           <div className="flex items-center justify-between">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-100">
               <AlertCircle className="h-4 w-4 text-amber-600" />
             </div>
-            <span className="text-lg font-bold text-amber-700">{displaySummary.unread}</span>
+            <span className="text-lg font-bold text-amber-700">{displaySummary.not_approved}</span>
           </div>
-          <p className="mt-2 text-xs font-medium text-amber-700">Unread</p>
-        </div>
-        <div className="rounded-lg bg-blue-50 p-3">
-          <div className="flex items-center justify-between">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100">
-              <Eye className="h-4 w-4 text-blue-600" />
-            </div>
-            <span className="text-lg font-bold text-blue-700">{displaySummary.read}</span>
-          </div>
-          <p className="mt-2 text-xs font-medium text-blue-700">Read</p>
+          <p className="mt-2 text-xs font-medium text-amber-700">Not Approved</p>
         </div>
         <div className="rounded-lg bg-green-50 p-3">
           <div className="flex items-center justify-between">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100">
               <CheckCircle className="h-4 w-4 text-green-600" />
             </div>
-            <span className="text-lg font-bold text-green-700">{displaySummary.resolved}</span>
+            <span className="text-lg font-bold text-green-700">{displaySummary.approved}</span>
           </div>
-          <p className="mt-2 text-xs font-medium text-green-700">Resolved</p>
+          <p className="mt-2 text-xs font-medium text-green-700">Approved</p>
         </div>
       </div>
     </div>

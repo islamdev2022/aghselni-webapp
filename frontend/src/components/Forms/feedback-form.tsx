@@ -1,5 +1,3 @@
-"use client"
-
 import { useState } from "react"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -19,7 +17,7 @@ import api from "@/api"
 const formSchema = z.object({
   name: z.string(),
   email: z.string().email(),
-  feedback: z
+  content: z
     .string()
     .min(10, "Feedback must be at least 10 characters")
     .max(500, "Feedback cannot exceed 500 characters"),
@@ -30,7 +28,7 @@ const formSchema = z.object({
 interface FeedbackPayload {
   name: string
   email: string
-  feedback: string
+  content: string
   rating?: number
 }
 
@@ -44,7 +42,7 @@ export default function FeedbackForm() {
     defaultValues: {
       name: Client?.full_name || "",
       email: Client?.email || "",
-      feedback: "",
+      content: "",
       rating: undefined,
     },
   })
@@ -53,7 +51,7 @@ export default function FeedbackForm() {
   const submitFeedback = useMutation({
     mutationFn: async (data: FeedbackPayload) => {
       // Replace with your actual API endpoint
-      const response = await api.post("/api/feedback/submit", data)
+      const response = await api.post("/api/feedback/", data)
       return response.data
     },
     onSuccess: () => {
@@ -63,7 +61,7 @@ export default function FeedbackForm() {
         form.reset({
           name: Client?.full_name || "",
           email: Client?.email || "",
-          feedback: "",
+          content: "",
           rating: undefined,
         })
         setShowSuccess(false)
@@ -82,7 +80,7 @@ export default function FeedbackForm() {
     const payload: FeedbackPayload = {
       name: values.name,
       email: values.email,
-      feedback: values.feedback,
+      content: values.content,
       rating: values.rating,
     }
 
@@ -91,7 +89,7 @@ export default function FeedbackForm() {
   }
 
   return (
-    <Card className=" mx-auto overflow-hidden shadow-lg p-0 lg:w-8/12 sm:w-4/5 w-full rounded-none sm:rounded-xl">
+    <Card className=" mx-auto overflow-hidden shadow-lg p-0 lg:w-8/12 sm:w-4/5 w-full rounded-none sm:rounded-xl mb-10">
       <CardHeader className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white py-3 ">
         <div className="flex items-center justify-center">
           <div className="p-3 bg-white/20 rounded-full">
@@ -110,7 +108,7 @@ export default function FeedbackForm() {
             <Check className="h-5 w-5 text-green-600" />
             <AlertTitle className="text-green-800">Thank You!</AlertTitle>
             <AlertDescription className="text-green-700">
-              Your feedback has been submitted successfully. We appreciate your input!
+              Your feedback has been submitted successfully. We appreciate your input! , we will get back to you soon.
             </AlertDescription>
           </Alert>
         )}
@@ -193,7 +191,7 @@ export default function FeedbackForm() {
 
               <FormField
                 control={form.control}
-                name="feedback"
+                name="content"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Your Feedback</FormLabel>
@@ -214,7 +212,7 @@ export default function FeedbackForm() {
             <CardFooter className="px-0 pt-2">
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-600"
+                className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-600 cursor-pointer"
                 disabled={submitFeedback.isPending}
               >
                 {submitFeedback.isPending ? (

@@ -827,7 +827,8 @@ def get_extern_appointments_revenue(request):
 from .models import Feedback
 from .serializers import FeedbackSerializer
 @api_view(['POST'])
-# @permission_classes([IsAuthenticated, IsClient])
+@authentication_classes([CustomJWTAuthentication])
+@permission_classes([IsAuthenticated, IsClient])
 def create_feedback(request):
     serializer = FeedbackSerializer(data=request.data)
     if serializer.is_valid():
@@ -836,10 +837,15 @@ def create_feedback(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['PUT'])
+@authentication_classes([CustomJWTAuthentication])
 @permission_classes([IsAuthenticated, IsAdmin])
 def approve_feedback(request, pk):
+    print('trying to update the status')
+    print('Request data:', request.data)
+    
     try:
         feedback = Feedback.objects.get(pk=pk)
+        print('Current approval status:', feedback.approved)
     except Feedback.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
     
@@ -847,11 +853,16 @@ def approve_feedback(request, pk):
     serializer = FeedbackSerializer(feedback, data=data, partial=True)
     
     if serializer.is_valid():
+        print('Serializer is valid, updating approval status')
         serializer.save()
+        print('New approval status:', feedback.approved)
         return Response(serializer.data)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    else:
+        print('Serializer errors:', serializer.errors)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
+@authentication_classes([CustomJWTAuthentication])
 # @permission_classes([IsAuthenticated, IsClient])
 def get_client_feedbacks(request):
     """
@@ -862,7 +873,8 @@ def get_client_feedbacks(request):
     return Response(serializer.data)
 
 @api_view(['GET'])
-# @permission_classes([IsAuthenticated, IsAdmin])
+@authentication_classes([CustomJWTAuthentication])
+@permission_classes([IsAuthenticated, IsAdmin])
 def get_admin_feedbacks(request):
     """
     Admins can see all feedback and optionally filter by approval status
@@ -878,3 +890,44 @@ def get_admin_feedbacks(request):
     
     serializer = FeedbackSerializer(feedbacks, many=True)
     return Response(serializer.data)
+
+from django.db.models import Count, Avg
+
+
+@api_view(['GET'])
+@authentication_classes([CustomJWTAuthentication])
+@permission_classes([IsAuthenticated, IsAdmin])
+def feedback_summary(request):
+    """
+    Get summary statistics for feedback:
+    - Total count
+    - Count of not approved feedback
+    - Count of approved feedback
+    - Average rating
+    """
+    try:
+        # Get total count
+        total_count = Feedback.objects.count()
+        
+        # Get approved counts
+        approved_count = Feedback.objects.filter(approved=True).count()
+        not_approved_count = Feedback.objects.filter(approved=False).count()
+        
+        # Calculate average rating
+        avg_rating = Feedback.objects.aggregate(avg_rating=Avg('rating'))['avg_rating']
+        
+        # Create summary data
+        summary = {
+            'total': total_count,
+            'not_approved': not_approved_count,
+            'approved': approved_count,
+            'average_rating': round(avg_rating, 1) if avg_rating else 0
+        }
+        
+        return Response(summary)
+    except Exception as e:
+        print(f"Error generating feedback summary: {str(e)}")
+        return Response(
+            {"error": "Failed to generate feedback summary"}, 
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )

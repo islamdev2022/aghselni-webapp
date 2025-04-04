@@ -197,4 +197,4 @@ class FeedbackSerializer(serializers.ModelSerializer):
     class Meta:
         model = Feedback
         fields = ['id', 'name', 'email', 'content', 'created_at', 'rating', 'approved']
-        read_only_fields = ['created_at', 'approved']
+        read_only_fields = ['created_at']
