@@ -1,34 +1,10 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
-import { useQuery, useMutation } from "@tanstack/react-query"
 import { AtSign, User, Phone, Calendar, Camera, Save, X, Check, Star } from "lucide-react"
-import api from "@/api"
 import ExternEmployeeLayout from "@/components/layouts/ExternEmployeeLayout"
 import LoadingSkeleton from "@/LoadingSkeleton"
-interface EmployeeDetails {
-  id: number
-  full_name: string
-  phone: string
-  age: number
-  final_rating: number
-  email: string
-  profile_image?: string
-}
-
-interface HistoryRecord {
-  id: number
-  client_name: string
-  cars_washed: number
-  appointment_details: string | { car_name: string; wash_type: string }
-}
-
-interface EmployeeData {
-  employee: EmployeeDetails
-  history: HistoryRecord[]
-  total_cars_washed: number
-  total_clients: number
-}
+import { useExtEmployeeDetails,useUpdateExternProfile } from "@/hooks"
 
 interface ProfileFormData {
   full_name: string
@@ -43,65 +19,31 @@ interface FormErrors {
 
 export default function ExternEmployeeProfile() {
   const navigate = useNavigate()
-  const [isEditing, setIsEditing] = useState(false)
   const [formData, setFormData] = useState<ProfileFormData>({
     full_name: "",
     age: 0,
     phone: "",
     photo: null,
   })
-  const [errors, setErrors] = useState<FormErrors>({})
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
-  const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
   // Get employee profile data
   const {
     isLoading,
     isError,
     data: employeeData,
-    refetch,
-  } = useQuery({
-    queryKey: ["extern-employee-details"],
-    queryFn: async () => {
-      try {
-        const response = await api.get<EmployeeData>("/api/extern_employee/details/")
-        return response.data
-      } catch (error: any) {
-        if (error.response && error.response.status === 403) {
-          // If unauthorized, redirect to login
-          navigate("/login")
-        }
-        throw error
-      }
-    },
-  })
+  } = useExtEmployeeDetails()
   console.log(employeeData)
 
   // Update profile mutation
-  const updateProfileMutation = useMutation({
-    mutationFn: async (data: FormData) => {
-      const response = await api.put("/api/extern_employee/profile/", data)
-      return response.data
-    },
-    onSuccess: () => {
-      setSuccessMessage("Profile updated successfully!")
-      setIsEditing(false)
-      refetch() // Refresh the data
-      setTimeout(() => {
-        setSuccessMessage(null)
-      }, 3000)
-    },
-    onError: (error: any) => {
-      console.error("Update error:", error)
-      if (error.response?.data) {
-        setErrors(error.response.data)
-      } else {
-        setErrors({
-          general: "An error occurred while updating your profile.",
-        })
-      }
-    },
-  })
+  const {
+    updateProfileMutation,
+    successMessage,
+    isEditing,
+    setIsEditing,
+    errors,
+    setErrors
+  } = useUpdateExternProfile();
 
   // Initialize form data when employee data is loaded
   useEffect(() => {
@@ -148,9 +90,9 @@ export default function ExternEmployeeProfile() {
 
     // Clear error when field is edited
     if (errors[name as keyof FormErrors]) {
-      setErrors((prev) => ({
+      setErrors((prev: FormErrors) => ({
         ...prev,
-        [name]: "",
+        [name as keyof FormErrors]: "",
       }))
     }
   }

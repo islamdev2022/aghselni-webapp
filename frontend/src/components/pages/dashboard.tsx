@@ -1,86 +1,30 @@
-import { useQuery } from "@tanstack/react-query"
 import { Users, Calendar, DollarSign, Car, Home } from "lucide-react"
-import api from "@/api"
 import AdminLayout from "../../components/layouts/AdminLayout"
 import StatCard from "../../components/admin/StatCard"
 import RevenueChart from "../../components/admin/RevenueChart"
 import AppointmentsTable from "../../components/admin/AppointmentsTable"
 import FeedbackSummaryWidget from "../../components/admin/FeedbackSummary"
-interface DashboardStats {
-  date: string
-  total_appointments: number
-}
+import { useGetStats,useAdminRevenue, useEmployees, useClients } from "@/hooks"
 
 export default function AdminDashboard() {
-  const { data: statslocal,  } = useQuery({
-    queryKey: ["admin-stats"],
-    queryFn: async () => {
-      const response = await api.get<DashboardStats>("/api/admin/appointments/stats/i")
-      return response.data
-    },
-  })
+  const { data: statslocal  } = useGetStats("i")
   console.log("stats" , statslocal)
 
-  const { data: statsdomiciel,  } = useQuery({
-    queryKey: ["admin-stats"],
-    queryFn: async () => {
-      const response = await api.get<DashboardStats>("/api/admin/appointments/stats/i")
-      return response.data
-    },
-  })
+  const { data: statsdomiciel  } = useGetStats("e") //here it will be an error
   console.log("stats" , statsdomiciel)
 
   
 
-  const { data : revenue } = useQuery({
-    queryKey: ["admin-revenue"],
-    queryFn: async () => {
-      const responsei = await api.get("/api/admin/appointments/revenue/i")
-      const responsee = await api.get("/api/admin/appointments/revenue/e")
+  // Get revenue data
+  const { data: revenue, isLoading: isRevenueLoading } = useAdminRevenue();
+  
+  // Get employees data
+  const { data: employees, isLoading: isEmployeesLoading } = useEmployees();
+  
+  // Get clients data
+  const { data: clients, isLoading: isClientsLoading } = useClients();
 
-
-      return {
-        total_revenue: responsei.data.total_revenue + responsee.data.total_revenue
-      }
-    }
-  })
-  console.log(revenue)
-console.log(statslocal)
-  const { data: employees, isLoading } = useQuery({
-    queryKey: ["employees"],
-    queryFn: async () => {
-      const internResponse = await api.get("/api/admin/intern_employees/")
-      const externResponse = await api.get("/api/admin/extern_employees/")
-      
-      const internEmployees = internResponse.data.map((emp: any) => ({
-        ...emp,
-        type: "intern_employee",
-      }))
-
-      const externEmployees = externResponse.data.map((emp: any) => ({
-        ...emp,
-        type: "extern_employee",
-      }))
-
-      return [
-         ...internEmployees,
-         ...externEmployees,
-        ]
-    },
-  })
-
-  const {
-    data: clients,
-    isLoading: isClientsLoading,
-  } = useQuery({
-    queryKey: ["clients"],
-    queryFn: async () => {
-      const response = await api.get("/api/admin/clients")
-      return response.data
-    },
-  })
-
-  if (isLoading || isClientsLoading) {
+  if (isEmployeesLoading || isClientsLoading || isRevenueLoading) {
     return (
       <AdminLayout>
         <div className="flex h-full items-center justify-center">
@@ -172,12 +116,6 @@ console.log(statslocal)
           <div className="rounded-xl bg-white p-6 shadow-sm">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-lg font-semibold text-gray-800">Revenue Overview</h2>
-              {/* <select className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500">
-                <option value="daily">Daily</option>
-                <option value="weekly">Weekly</option>
-                <option value="monthly">Monthly</option>
-                <option value="yearly">Yearly</option>
-              </select> */}
             </div>
             <div className="h-64">
               <RevenueChart />
@@ -192,12 +130,9 @@ console.log(statslocal)
               <div className="rounded-lg bg-cyan-50 px-2.5 py-1 text-xs font-medium text-cyan-700">
                 <span className="flex items-center">
                   <Calendar className="mr-1 h-3.5 w-3.5" />
-                  Today
+                  All
                 </span>
               </div>
-              <button className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-1">
-                View All
-              </button>
             </div>
           </div>
           <AppointmentsTable />

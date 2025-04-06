@@ -1,27 +1,10 @@
-"use client"
-
 import type React from "react"
 import { useState } from "react"
-import { useMutation } from "@tanstack/react-query"
 import { useNavigate } from "react-router-dom"
 import { AtSign, User, Phone,  Briefcase, Save, X } from "lucide-react"
-import api from "@/api"
 import AdminLayout from "@/components/layouts/AdminLayout"
+import { useRegisterEmployee, EmployeeFormData,FormErrors } from '@/hooks';
 
-interface EmployeeFormData {
-  full_name: string
-  email: string
-  phone: string
-  age: number
-  type: "intern_employee" | "extern_employee"
-  password: string
-  confirmPassword: string
-  profileImage?: File
-}
-
-interface FormErrors {
-  [key: string]: string
-}
 export default function AddEmployeePage() {
   const navigate = useNavigate()
   const [formData, setFormData] = useState<EmployeeFormData>({
@@ -35,36 +18,7 @@ export default function AddEmployeePage() {
     profileImage: undefined,
   })
 
-  const [errors, setErrors] = useState<FormErrors>({})
-const registerMutation = useMutation({
-    mutationFn: async (data: EmployeeFormData) => {
-      const endpoint =
-        data.type === "intern_employee" ? "/api/auth/intern_employee/register/" : "/api/auth/extern_employee/register/"
-
-      const response = await api.post(endpoint, {
-        full_name: data.full_name,
-        email: data.email,
-        phone: data.phone,
-        password: data.password,
-        age: data.age,
-      })
-
-      return response.data
-    },
-    onSuccess: () => {
-      navigate("/admin/employees")
-    },
-    onError: (error: any) => {
-      console.error("Registration error:", error)
-      if (error.response?.data) {
-        setErrors(error.response.data)
-      } else {
-        setErrors({
-          general: "An error occurred while registering the employee.",
-        })
-      }
-    },
-  })
+  const { registerMutation, errors, setErrors } = useRegisterEmployee();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target

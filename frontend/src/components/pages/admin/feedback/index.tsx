@@ -1,53 +1,23 @@
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { MessageSquare, Search, Star,  CheckCircle, AlertCircle,  User, Calendar, X } from 'lucide-react';
 import { format } from 'date-fns';
-import api from '@/api';
 import AdminLayout from '@/components/layouts/AdminLayout';
-
-interface Feedback {
-  id: number;
-  name: string;
-  email: string;
-  content: string;
-  rating: number;
-  created_at: string;
-  approved : boolean
-}
+import { Feedback , useGetFeedbacks, useUpdateFeedback } from '@/hooks';
 
 export default function FeedbackPage() {
-  const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [ratingFilter, setRatingFilter] = useState<number | null>(null);
-  const [selectedFeedback, setSelectedFeedback] = useState<Feedback | null>(null);
-  const [showDetailModal, setShowDetailModal] = useState(false);
 
   // Fetch feedback data
-  const { data: feedbackData, isLoading } = useQuery({
-    queryKey: ['admin-feedback'],
-    queryFn: async () => {
-      const response = await api.get<Feedback[]>('/api/admin/feedbacks/');
-      return response.data;
-    }
-  });
+  const { data: feedbackData, isLoading } = useGetFeedbacks()
 
   // Update feedback status mutation
-  const updateStatusMutation = useMutation({
-    mutationFn: async ({ id, approved }: { id: number, approved: boolean }) => {
-        const response = await api.put(`/api/admin/feedbacks/${id}/approve/`, { approved });
-        return response.data;
-      },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-feedback'] });
-      if (showDetailModal && selectedFeedback) {
-        setSelectedFeedback(prev => prev ? { ...prev as any } : null);
-      }
-    },
-    onError: (error) => {
-        console.error('Error updating feedback status:', error);
-        }
-  });
+ const {selectedFeedback,
+  setSelectedFeedback,
+  showDetailModal,
+  setShowDetailModal,
+  updateStatusMutation} = useUpdateFeedback()
 
 
   const displayFeedback = feedbackData || [];

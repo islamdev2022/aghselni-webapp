@@ -1,31 +1,7 @@
-import { useQuery } from "@tanstack/react-query"
-import api from "@/api"
 import ExternEmployeeLayout from "@/components/layouts/ExternEmployeeLayout"
 import { Car, Users } from "lucide-react"
 import LoadingSkeleton from "@/LoadingSkeleton"
-interface EmployeeDetails {
-    id: number
-    full_name: string
-    phone: string
-    age: number
-    final_rating: number
-    email: string
-    profile_image?: string
-  }
-  
-  interface HistoryRecord {
-    id: number
-    client_name: string
-    cars_washed: number
-    appointment_details: string | { car_name: string; wash_type: string }
-  }
-  
-  interface EmployeeData {
-    employee: EmployeeDetails
-    history: HistoryRecord[]
-    total_cars_washed: number
-    total_clients: number
-  }
+import { useExtEmployeeDetails } from "@/hooks"
   
 const ExtEmpHistory = () => {
 
@@ -33,20 +9,7 @@ const ExtEmpHistory = () => {
   const {
     isLoading,
     data: employeeData,
-  } = useQuery({
-    queryKey: ["extern-employee-details"],
-    queryFn: async () => {
-      try {
-        const response = await api.get<EmployeeData>("/api/extern_employee/details/")
-        return response.data
-      } catch (error: any) {
-        if (error.response && error.response.status === 403) {
-          // If unauthorized, redirect to login
-        }
-        throw error
-      }
-    },
-  })
+  } = useExtEmployeeDetails()
   if (isLoading) {
     return (
       <ExternEmployeeLayout>

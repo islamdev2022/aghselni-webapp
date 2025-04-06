@@ -1,38 +1,23 @@
 import { useState } from "react"
-import { useQuery } from "@tanstack/react-query"
 import { Clock, MapPin, User, Check, X, Filter } from "lucide-react"
-import api from "@/api"
-
+import { useGetDomicielAppointments,useGetInternAppointments } from "@/hooks"
+import Loading from "@/loading"
 type AppointmentType = "all" | "domicile" | "intern"
 
 export default function AppointmentsTable() {
   const [appointmentType, setAppointmentType] = useState<AppointmentType>("all")
 
   // Fetch domicile appointments
-  const { data: domicileAppointments, isLoading: isDomicileLoading } = useQuery({
-    queryKey: ["domicile-appointments"],
-    queryFn: async () => {
-      const response = await api.get("/api/appointments_domicile/get")
-      return response.data
-    },
-  })
+  const { data: domicileAppointments, isLoading: isDomicileLoading } = useGetDomicielAppointments()
 
   // Fetch intern appointments
-  const { data: internAppointments, isLoading: isInternLoading } = useQuery({
-    queryKey: ["intern-appointments"],
-    queryFn: async () => {
-      const response = await api.get("/api/appointments_location/get")
-      return response.data
-    },
-  })
+  const { data: internAppointments, isLoading: isInternLoading } = useGetInternAppointments()
 
   const isLoading = isDomicileLoading || isInternLoading
 
   if (isLoading) {
     return (
-      <div className="flex justify-center py-8">
-        <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-cyan-600"></div>
-      </div>
+      <Loading/>
     )
   }
 

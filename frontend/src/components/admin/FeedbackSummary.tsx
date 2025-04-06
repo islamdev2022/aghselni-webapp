@@ -1,25 +1,9 @@
-import { useQuery } from "@tanstack/react-query"
 import { MessageSquare, Star, AlertCircle, CheckCircle } from "lucide-react"
 import { Link } from "react-router-dom"
-import api from "@/api"
 import LoadingSkeleton from "@/LoadingSkeleton"
-interface FeedbackSummary {
-  total: number
-  not_approved: number
-  approved: number
-  resolved: number
-  average_rating: number
-
-}
-
+import { useGetFeedbacksSummary , FeedbackSummary } from "@/hooks"
 export default function FeedbackSummaryWidget() {
-  const { data: summary, isLoading } = useQuery({
-    queryKey: ["feedback-summary"],
-    queryFn: async () => {
-      const response = await api.get<FeedbackSummary>("/api/admin/feedbacks/summary/")
-      return response.data
-    },
-  })
+  const { data: summary, isLoading } = useGetFeedbacksSummary()
     console.log("summary", summary)
   const displaySummary: FeedbackSummary = summary || {
     total: 0,

@@ -278,6 +278,32 @@ def get_update_delete_extern_employee(request, pk):
             
     except ExternEmployee.DoesNotExist:
         return Response({"error": "الموظف غير موجود"}, status=status.HTTP_404_NOT_FOUND)
+    
+@api_view(['GET', 'PUT'])
+@authentication_classes([CustomJWTAuthentication])
+@permission_classes([IsAuthenticated])
+def update_extern_employee_profile(request):
+    """
+    Get or update the currently authenticated external employee's profile
+    """
+    try:
+        # Get the current external employee
+        employee = ExternEmployee.objects.get(id=request.user.id)
+        
+        if request.method == 'GET':
+            serializer = ExternEmployeeDetailSerializer(employee)
+            return Response(serializer.data)
+        
+        elif request.method == 'PUT':
+            # Use partial=True to allow partial updates
+            serializer = ExternEmployeeSerializer(employee, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({"message": "تم تحديث البيانات بنجاح", "data": serializer.data})
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
+    except ExternEmployee.DoesNotExist:
+        return Response({"error": "الموظف غير موجود"}, status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET', 'PUT', 'DELETE'])
 @authentication_classes([CustomJWTAuthentication])
@@ -908,7 +934,7 @@ def approve_feedback(request, pk):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
-@authentication_classes([CustomJWTAuthentication])
+# @authentication_classes([CustomJWTAuthentication])
 # @permission_classes([IsAuthenticated, IsClient])
 def get_client_feedbacks(request):
     """

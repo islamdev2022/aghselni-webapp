@@ -1,71 +1,26 @@
-"use client"
-
 import type React from "react"
-
 import { useState } from "react"
-import { useMutation } from "@tanstack/react-query"
 import { Settings, User, AtSign, Lock, Eye, EyeOff, Save, Check, AlertTriangle } from "lucide-react"
-import  api  from "@/api"
 import AdminLayout from "@/components/layouts/AdminLayout"
-
-interface AdminFormData {
-  fullName: string
-  email: string
-  password: string
-  confirmPassword: string
-}
+import { useCreateAdmin } from "@/hooks"
 
 interface FormErrors {
   [key: string]: string
 }
 
 export default function SettingsPage() {
-  const [formData, setFormData] = useState<AdminFormData>({
-    fullName: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-  })
 
-  const [errors, setErrors] = useState<FormErrors>({})
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
-  const createAdminMutation = useMutation({
-    mutationFn: async (data: Omit<AdminFormData, "confirmPassword">) => {
-      const response = await api.post("/api/auth/admin/register/", {
-        full_name: data.fullName,
-        email: data.email,
-        password: data.password,
-      })
-      return response.data
-    },
-    onSuccess: () => {
-      setSuccessMessage("Admin user created successfully!")
-      // Reset form
-      setFormData({
-        fullName: "",
-        email: "",
-        password: "",
-        confirmPassword: "",
-      })
-      // Clear success message after 5 seconds
-      setTimeout(() => {
-        setSuccessMessage(null)
-      }, 5000)
-    },
-    onError: (error: any) => {
-      console.error("Error creating admin:", error)
-      if (error.response?.data) {
-        setErrors(error.response.data)
-      } else {
-        setErrors({
-          general: "An error occurred while creating the admin user.",
-        })
-      }
-    },
-  })
+  const {
+    formData,
+        setFormData,
+        createAdminMutation,
+        errors,
+        setErrors,
+        successMessage,
+  } = useCreateAdmin()
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target

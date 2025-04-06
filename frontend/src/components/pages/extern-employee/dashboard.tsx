@@ -1,45 +1,11 @@
-"use client";
-import { useQuery } from "@tanstack/react-query";
 import { User, Star, Car, Users, CheckCircle } from "lucide-react";
-import api from "@/api";
+import { useExtEmployeeDetails } from "@/hooks";
 import ExternEmployeeLayout from "@/components/layouts/ExternEmployeeLayout";
 import StatCard from "@/components/extern-employee/StatCard";
 import AppointmentTabs from "@/components/extern-employee/AppointemntTabs";
 
-interface EmployeeDetails {
-  id: number;
-  full_name: string;
-  phone: string;
-  age: number;
-  final_rating: number;
-  email: string;
-  profile_image: string | null;
-}
-
-interface HistoryRecord {
-  id: number;
-  client_name: string;
-  cars_washed: number;
-  appointment_details: string;
-}
-
-interface EmployeeData {
-  employee: EmployeeDetails;
-  history: HistoryRecord[];
-  total_cars_washed: number;
-  total_clients: number;
-}
-
 export default function ExternEmployeeDashboard() {
-  const { data: employeeData, isLoading: isEmployeeLoading } = useQuery({
-    queryKey: ["extern-employee-details"],
-    queryFn: async () => {
-      const response = await api.get<EmployeeData>(
-        "/api/extern_employee/details/"
-      );
-      return response.data;
-    },
-  });
+  const { data: employeeData, isLoading: isEmployeeLoading } = useExtEmployeeDetails()
   console.log("emloyee data in dashboard", employeeData);
 
   if (isEmployeeLoading) {

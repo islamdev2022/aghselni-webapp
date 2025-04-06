@@ -1,73 +1,22 @@
-"use client"
-
 import { useState } from "react"
-import { useQuery,useQueryClient,useMutation } from "@tanstack/react-query"
 import { Search, Plus, Edit, Trash2, UserCog,  Phone,AlertTriangle } from "lucide-react"
-import  api  from "@/api"
 import AdminLayout from "@/components/layouts/AdminLayout"
 import { Link } from "react-router-dom"
-
+import { useEmployees,useDeleteEmployee } from "@/hooks"
 
 export default function EmployeesPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [filterType, setFilterType] = useState<string>("all")
-  const [showDeleteModal, setShowDeleteModal] = useState(false)
-  const [employeeToDelete,setEmployeeToDelete] = useState<number | null>(null)
 
-  const queryClient = useQueryClient()
-  const { data: employees, isLoading,refetch } = useQuery({
-    queryKey: ["employees"],
-    queryFn: async () => {
-      const internResponse = await api.get("/api/admin/intern_employees/")
-      const externResponse = await api.get("/api/admin/extern_employees/")
+  const { data: employees, isLoading } = useEmployees()
+  const {
+    deleteEmployeeMutation,
+    showDeleteModal,
+    confirmDelete,
+    handleDelete,
+    cancelDelete
+  } = useDeleteEmployee(employees);
 
-      const internEmployees = internResponse.data.map((emp: any) => ({
-        ...emp,
-        type: "intern_employee",
-      }))
-
-      const externEmployees = externResponse.data.map((emp: any) => ({
-        ...emp,
-        type: "extern_employee",
-      }))
-
-      return [
-         ...internEmployees,
-         ...externEmployees]
-    },
-  })
-
-  const deleteEmployee = useMutation({
-    mutationFn: async (id: number) => {
-      const employeeToDelete = employees?.find(emp => emp.employee.id === id);
-      if (employeeToDelete?.type === "intern_employee") {
-        return await api.delete(`/api/admin/intern_employee/${id}/`)
-      }
-      else {
-        await api.delete(`/api/admin/extern_employee/${id}/`)
-      }
-      
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["employees"] })
-      refetch()
-      setShowDeleteModal(false)
-    },
-    onError: (error: any) => {
-      console.error(error)
-    }
-  })
-
-  const handleDeleteClick = (clientId: number) => {
-    setEmployeeToDelete(clientId)
-    setShowDeleteModal(true)
-  }
-
-  const confirmDelete = () => {
-    if (deleteEmployee && employeeToDelete !== null) {
-      deleteEmployee.mutate(employeeToDelete)
-    }
-  }
   if (isLoading) {
     return (
         <AdminLayout>
@@ -208,7 +157,7 @@ return (
                           <Edit className="h-4 w-4" />
                         </button>
                         <button 
-                          onClick={() => handleDeleteClick(employee.employee.id)}
+                          onClick={() => confirmDelete(employee.employee.id)}
                         className="rounded-lg border border-gray-200 bg-white p-1.5 text-red-600 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1">
                           <Trash2 className="h-4 w-4" />
                         </button>
@@ -267,17 +216,17 @@ return (
             </p>
             <div className="flex justify-center space-x-4">
               <button
-                onClick={() => setShowDeleteModal(false)}
+                onClick={cancelDelete}
                 className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2"
               >
                 Cancel
               </button>
               <button
-                onClick={confirmDelete}
-                disabled={deleteEmployee.isPending}
+                onClick={handleDelete}
+                disabled={deleteEmployeeMutation.isPending}
                 className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-70"
               >
-                {deleteEmployee.isPending ? (
+                {deleteEmployeeMutation.isPending ? (
                   <span className="flex items-center">
                     <svg className="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24">
                       <circle

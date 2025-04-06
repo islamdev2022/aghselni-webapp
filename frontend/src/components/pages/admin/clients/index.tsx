@@ -1,9 +1,7 @@
 import { useState } from "react"
-import { useQuery, useMutation } from "@tanstack/react-query"
 import { Search, Trash2, User, Mail, Phone, AlertTriangle } from "lucide-react"
-import api from "@/api"
 import AdminLayout from "@/components/layouts/AdminLayout"
-
+import { useClients, useDeleteClient } from "@/hooks"
 interface Client {
   id: number
   full_name: string
@@ -15,31 +13,18 @@ interface Client {
 
 export default function ClientsPage() {
   const [searchTerm, setSearchTerm] = useState("")
-  const [showDeleteModal, setShowDeleteModal] = useState(false)
-  const [clientToDelete, setClientToDelete] = useState<number | null>(null)
-
   const {
     data: clients,
     isLoading,
-    refetch,
-  } = useQuery({
-    queryKey: ["clients"],
-    queryFn: async () => {
-      const response = await api.get("/api/admin/clients")
-      return response.data
-    },
-  })
+  } = useClients()
 
-  const deleteMutation = useMutation({
-    mutationFn: async (clientId: number) => {
-      await api.delete(`/api/admin/client/${clientId}/`)
-    },
-    onSuccess: () => {
-      refetch()
-      setShowDeleteModal(false)
-      setClientToDelete(null)
-    },
-  })
+  const {
+    showDeleteModal,
+    setShowDeleteModal,
+    clientToDelete,
+    setClientToDelete,
+    deleteMutation,
+  } = useDeleteClient()
 
 
   const displayClients = clients || []

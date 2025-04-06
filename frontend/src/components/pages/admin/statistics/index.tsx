@@ -1,17 +1,12 @@
 import { useEffect, useState } from "react"
-import { useQuery } from "@tanstack/react-query"
 import { BarChart, LineChart, Calendar, ArrowUp } from "lucide-react"
-import api from "@/api"
 import AdminLayout from "@/components/layouts/AdminLayout"
 import AppointmentsByDayChart from "./AppointmentsByChart"
 import RevenueTrend from "./RevenueTrend"
 import ServicesByTypePieChart from "./ServicesByTypePieChart"
 import ServicesByLocationBarChart from "./ServicesByLocationBarChart"
-interface Stats {
-  date: string
-  total_appointments: number
-  
-}
+import { useGetDomicielAppointments,useGetStats } from "@/hooks"
+
 
 export default function StatisticsPage() {
   const [timeRange, setTimeRange] = useState<"week" | "month" | "quarter" | "year">("month")
@@ -19,42 +14,16 @@ export default function StatisticsPage() {
   const [totalRevenue, setTotalRevenue] = useState(0)
 
   // Fetch domicile appointments
-  const { data: domicileAppointments, isLoading: isDomicileLoading } = useQuery({
-    queryKey: ["domicile-appointments"],
-    queryFn: async () => {
-      const response = await api.get("/api/appointments_domicile/get")
-      return response.data
-    },
-  })
+  const { data: domicileAppointments, isLoading: isDomicileLoading } = useGetDomicielAppointments()
 
   // Fetch intern appointments
-  const { data: internAppointments, isLoading: isInternLoading } = useQuery({
-    queryKey: ["intern-appointments"],
-    queryFn: async () => {
-      const response = await api.get("/api/appointments_location/get")
-      return response.data
-    },
-  })
+  const { data: internAppointments, isLoading: isInternLoading } = useGetDomicielAppointments()
 
   console.log("domicile", domicileAppointments)
   console.log("intern", internAppointments)
 
-  const { data: statsLocal } = useQuery<Stats>({
-    queryKey: ["admin-stats-local"],
-    queryFn: async () => {
-      const response = await api.get<Stats>("/api/admin/appointments/stats/i");
-      return response.data;
-    },
-  });
-
-  // Second query for domicile stats
-  const { data: statsDomicile } = useQuery<Stats>({
-    queryKey: ["admin-stats-domicile"],
-    queryFn: async () => {
-      const response = await api.get<Stats>("/api/admin/appointments/stats/e");
-      return response.data;
-    },
-  });
+  const { data: statsLocal } = useGetStats("i")
+  const { data: statsDomicile } = useGetStats("e")
 
   // Log the data (you might want to remove this in production)
   console.log("Local Stats:", statsLocal);
