@@ -2,6 +2,16 @@ import { useQuery, useMutation, QueryClient,useQueryClient } from "@tanstack/rea
 import api from "@/api"
 import { useState } from 'react';
 
+export function useGetUserData() {
+  return useQuery({
+    queryKey: ["user-data"],
+    queryFn: async () => {
+      const response = await api.get("/api/user/me")
+      return response.data
+    },
+  })
+}
+
 // ________________________________________________________Query hooksfor extern employee__________________________________________________ 
 export function usePendingAppointments() {
   return useQuery({
@@ -739,6 +749,49 @@ export function useGetExternEmployeePublic (id : number){
     queryKey: ["extern-employee-public", id],
     queryFn: async () => {
       const response = await api.get(`/api/extern_employee/${id}/`)
+      return response.data
+    },
+  })
+}
+
+export function useGetInternAppointmentDetails (appointmentId: number | undefined) {
+  return useQuery<Appointment | null>({
+    queryKey: ["intern-appointment-details", appointmentId],
+    queryFn: async () => {
+      if (!appointmentId) return null;
+      const response = await api.get(`/api/appointments_location/${appointmentId}/`);
+      return response.data;
+    },
+    enabled: !!appointmentId,
+  });
+}
+interface EmployeeDetails {
+  id: number
+  full_name: string
+  phone: string
+  email: string
+  photo: string | null
+}
+
+interface HistoryRecord {
+  id: number
+  client_name: string
+  cars_washed: number
+  appointment_details: string | { car_name: string; wash_type: string }
+}
+
+interface EmployeeData {
+  employee: EmployeeDetails
+  history: HistoryRecord[]
+  total_cars_washed: number
+  total_clients: number
+}
+
+export function useGetInternEmployeeDetails (){
+  return useQuery({
+    queryKey: ["intern-employee-details"],
+    queryFn: async () => {
+      const response = await api.get<EmployeeData>("/api/intern_employee/details/")
       return response.data
     },
   })

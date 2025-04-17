@@ -67,10 +67,11 @@ class ExternEmployeeSerializer(serializers.ModelSerializer):
     phone = serializers.CharField(validators=[validate_phone])
     email = serializers.EmailField(validators=[validate_email])
     age = serializers.IntegerField(validators=[validate_age])
+    profile_image = serializers.ImageField(required=False, allow_null=True) #####
 
     class Meta:
         model = ExternEmployee
-        fields = ['full_name', 'email', 'phone', 'age', 'password']
+        fields = ['full_name', 'email', 'phone', 'age', 'password','profile_image']
 
     def create(self, validated_data):
         return ExternEmployee.objects.create(**validated_data)
@@ -81,10 +82,10 @@ class InternEmployeeSerializer(serializers.ModelSerializer):
     phone = serializers.CharField(validators=[validate_phone])
     email = serializers.EmailField(validators=[validate_email])
     age = serializers.IntegerField(validators=[validate_age])
-
+    profile_image = serializers.ImageField(required=False, allow_null=True) #####
     class Meta:
         model = InternEmployee
-        fields = ['full_name', 'email', 'phone', 'age', 'password']
+        fields = ['full_name', 'email', 'phone', 'age', 'password', 'profile_image']
 
     def create(self, validated_data):
         return InternEmployee.objects.create(**validated_data)

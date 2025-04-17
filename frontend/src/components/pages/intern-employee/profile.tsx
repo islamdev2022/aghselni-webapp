@@ -1,14 +1,15 @@
 import type React from "react"
+
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
-import { AtSign, User, Phone, Calendar, Camera, Save, X, Check, Star } from "lucide-react"
-import ExternEmployeeLayout from "@/components/layouts/ExternEmployeeLayout"
+import {  useMutation } from "@tanstack/react-query"
+import { AtSign, User, Phone, Camera, Save, X, Check, Car, Users } from "lucide-react"
+import api from "@/api"
+import InternEmployeeLayout from "@/components/layouts/InternEmpoyeeLayout"
+import {useGetInternEmployeeDetails} from "@/hooks"
 import LoadingSkeleton from "@/LoadingSkeleton"
-import { useExtEmployeeDetails,useUpdateExternProfile } from "@/hooks"
-
 interface ProfileFormData {
   full_name: string
-  age: number
   phone: string
   photo: File | null
 }
@@ -17,33 +18,51 @@ interface FormErrors {
   [key: string]: string
 }
 
-export default function ExternEmployeeProfile() {
+export default function InternEmployeeProfile() {
   const navigate = useNavigate()
+  const [isEditing, setIsEditing] = useState(false)
   const [formData, setFormData] = useState<ProfileFormData>({
     full_name: "",
-    age: 0,
     phone: "",
     photo: null,
   })
+  const [errors, setErrors] = useState<FormErrors>({})
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
   // Get employee profile data
   const {
     isLoading,
     isError,
     data: employeeData,
-  } = useExtEmployeeDetails()
-  console.log(employeeData)
+    refetch,
+  } = useGetInternEmployeeDetails()
 
   // Update profile mutation
-  const {
-    updateProfileMutation,
-    successMessage,
-    isEditing,
-    setIsEditing,
-    errors,
-    setErrors
-  } = useUpdateExternProfile();
+  const updateProfileMutation = useMutation({
+    mutationFn: async (data: FormData) => {
+      const response = await api.put("/api/intern_employee/profile/", data)
+      return response.data
+    },
+    onSuccess: () => {
+      setSuccessMessage("Profile updated successfully!")
+      setIsEditing(false)
+      refetch() // Refresh the data
+      setTimeout(() => {
+        setSuccessMessage(null)
+      }, 3000)
+    },
+    onError: (error: any) => {
+      console.error("Update error:", error)
+      if (error.response?.data) {
+        setErrors(error.response.data)
+      } else {
+        setErrors({
+          general: "An error occurred while updating your profile.",
+        })
+      }
+    },
+  })
 
   // Initialize form data when employee data is loaded
   useEffect(() => {
@@ -51,13 +70,12 @@ export default function ExternEmployeeProfile() {
       const employee = employeeData.employee
       setFormData({
         full_name: employee.full_name || "",
-        age: employee.age || 0,
         phone: employee.phone || "",
         photo: null,
       })
 
-      if (employee.profile_image) {
-        setPhotoPreview(`http://127.0.0.1:8000${employee.profile_image}`)
+      if (employee.photo) {
+        setPhotoPreview(`http://127.0.0.1:8000${employee.photo}`)
       }
     }
   }, [employeeData])
@@ -84,15 +102,15 @@ export default function ExternEmployeeProfile() {
     } else {
       setFormData((prev) => ({
         ...prev,
-        [name]: type === "number" ? Number.parseInt(value) : value,
+        [name]: value,
       }))
     }
 
     // Clear error when field is edited
     if (errors[name as keyof FormErrors]) {
-      setErrors((prev: FormErrors) => ({
+      setErrors((prev) => ({
         ...prev,
-        [name as keyof FormErrors]: "",
+        [name]: "",
       }))
     }
   }
@@ -110,10 +128,6 @@ export default function ExternEmployeeProfile() {
       newErrors.phone = "Please enter a valid 10-digit phone number"
     }
 
-    if (!formData.age || formData.age < 16 || formData.age > 120) {
-      newErrors.age = "Please enter a valid age between 16 and 120"
-    }
-
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -125,14 +139,11 @@ export default function ExternEmployeeProfile() {
       // Create FormData object for file upload
       const submitData = new FormData()
       submitData.append("full_name", formData.full_name)
-      submitData.append("age", formData.age.toString())
       submitData.append("phone", formData.phone)
 
       if (formData.photo) {
         submitData.append("photo", formData.photo)
       }
-      console.log(submitData.get("photo"))
-      console.log(submitData.get("full_name"))
 
       updateProfileMutation.mutate(submitData)
     }
@@ -144,13 +155,12 @@ export default function ExternEmployeeProfile() {
       const employee = employeeData.employee
       setFormData({
         full_name: employee.full_name || "",
-        age: employee.age || 0,
         phone: employee.phone || "",
         photo: null,
       })
 
-      if (employee.profile_image) {
-        setPhotoPreview(`http://127.0.0.1:8000${employee.profile_image}`)
+      if (employee.photo) {
+        setPhotoPreview(`http://127.0.0.1:8000${employee.photo}`)
       } else {
         setPhotoPreview(null)
       }
@@ -162,37 +172,37 @@ export default function ExternEmployeeProfile() {
 
   if (isLoading) {
     return (
-      <ExternEmployeeLayout>
-        <div className="flex h-full items-center justify-center">
-          <LoadingSkeleton />
-        </div>
-      </ExternEmployeeLayout>
+      <InternEmployeeLayout>
+          <LoadingSkeleton/>
+      </InternEmployeeLayout>
     )
   }
 
   if (isError) {
     return (
-      <ExternEmployeeLayout>
+      <InternEmployeeLayout>
         <div className="container mx-auto px-4 py-8">
           <div className="max-w-3xl mx-auto bg-white rounded-lg shadow p-8">
             <h1 className="text-2xl font-bold text-red-600 mb-4">Error loading profile</h1>
             <p className="mb-4">We couldn't load your profile information. Please try again later.</p>
             <button
-              onClick={() => navigate("/extern-employee")}
+              onClick={() => navigate("/intern-employee")}
               className="rounded-lg bg-cyan-600 px-4 py-2 text-sm font-medium text-white hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2"
             >
               Return to Dashboard
             </button>
           </div>
         </div>
-      </ExternEmployeeLayout>
+      </InternEmployeeLayout>
     )
   }
 
   const employee = employeeData?.employee
+  const totalCarsWashed = employeeData?.total_cars_washed || 0
+  const totalClients = employeeData?.total_clients || 0
 
   return (
-    <ExternEmployeeLayout>
+    <InternEmployeeLayout>
       <div className="container mx-auto px-4 py-8">
         <div className="space-y-6">
           {/* Profile Header */}
@@ -239,7 +249,7 @@ export default function ExternEmployeeProfile() {
                     <div className="h-24 w-24 rounded-full overflow-hidden bg-gray-100 border-4 border-white shadow-md">
                       {photoPreview ? (
                         <img
-                          src={photoPreview || "/placeholder.svg"}
+                          src={`http://127.0.0.1:8000${photoPreview}`}
                           alt="Profile"
                           className="h-full w-full object-cover"
                         />
@@ -319,35 +329,6 @@ export default function ExternEmployeeProfile() {
                     <p className="mt-1 text-xs text-gray-500">Email address cannot be changed</p>
                   </div>
 
-                  {/* Age */}
-                  <div className="relative">
-                    <label htmlFor="age" className="mb-1.5 block text-sm font-medium text-gray-700">
-                      Age
-                    </label>
-                    <div className="relative">
-                      <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                        <Calendar className="h-4 w-4" />
-                      </div>
-                      <input
-                        type="number"
-                        id="age"
-                        name="age"
-                        value={formData.age}
-                        onChange={handleChange}
-                        disabled={!isEditing}
-                        min="16"
-                        max="120"
-                        className={`w-full rounded-lg border ${
-                          errors.age ? "border-red-300 bg-red-50" : "border-gray-200"
-                        } py-2.5 pl-10 pr-3 text-sm shadow-sm transition focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500 ${
-                          !isEditing ? "bg-gray-50" : ""
-                        }`}
-                        placeholder="Your age"
-                      />
-                    </div>
-                    {errors.age && <p className="mt-1.5 text-xs font-medium text-red-500">{errors.age}</p>}
-                  </div>
-
                   {/* Phone */}
                   <div className="relative">
                     <label htmlFor="phone" className="mb-1.5 block text-sm font-medium text-gray-700">
@@ -373,27 +354,6 @@ export default function ExternEmployeeProfile() {
                       />
                     </div>
                     {errors.phone && <p className="mt-1.5 text-xs font-medium text-red-500">{errors.phone}</p>}
-                  </div>
-
-                  {/* Rating (read-only) */}
-                  <div className="relative">
-                    <label htmlFor="rating" className="mb-1.5 block text-sm font-medium text-gray-700">
-                      Your Rating
-                    </label>
-                    <div className="relative">
-                      <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                        <Star className="h-4 w-4 text-amber-400" />
-                      </div>
-                      <input
-                        type="text"
-                        id="rating"
-                        value={employee?.final_rating?.toFixed(1) || "0.0"}
-                        disabled
-                        className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-3 text-sm shadow-sm"
-                        placeholder="Your rating"
-                      />
-                    </div>
-                    <p className="mt-1 text-xs text-gray-500">Rating is based on client feedback</p>
                   </div>
                 </div>
 
@@ -456,9 +416,76 @@ export default function ExternEmployeeProfile() {
               </form>
             </div>
           </div>
+
+          {/* Stats Cards */}
+          <div className="max-w-3xl mx-auto grid grid-cols-1 gap-6 sm:grid-cols-2">
+            <div className="rounded-xl bg-white p-6 shadow-sm">
+              <div className="flex items-center">
+                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-cyan-50">
+                  <Car className="h-6 w-6 text-cyan-600" />
+                </div>
+                <div className="ml-4">
+                  <h3 className="text-sm font-medium text-gray-500">Cars Washed</h3>
+                  <p className="mt-1 text-2xl font-bold text-gray-800">{totalCarsWashed}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-xl bg-white p-6 shadow-sm">
+              <div className="flex items-center">
+                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-50">
+                  <Users className="h-6 w-6 text-indigo-600" />
+                </div>
+                <div className="ml-4">
+                  <h3 className="text-sm font-medium text-gray-500">Total Clients</h3>
+                  <p className="mt-1 text-2xl font-bold text-gray-800">{totalClients}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Service History */}
+          {employeeData?.history && employeeData.history.length > 0 && (
+            <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-sm overflow-hidden">
+              <div className="px-6 py-4 border-b border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-800">Service History</h3>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="border-b border-gray-200 bg-gray-50">
+                      <th className="whitespace-nowrap px-4 py-3 text-left text-sm font-medium text-gray-500">
+                        Client
+                      </th>
+                      <th className="whitespace-nowrap px-4 py-3 text-left text-sm font-medium text-gray-500">
+                        Cars Washed
+                      </th>
+                      <th className="whitespace-nowrap px-4 py-3 text-left text-sm font-medium text-gray-500">
+                        Details
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {employeeData.history.map((record) => (
+                      <tr key={record.id} className="border-b border-gray-100 hover:bg-gray-50">
+                        <td className="whitespace-nowrap px-4 py-3 text-sm font-medium text-gray-800">
+                          {record.client_name}
+                        </td>
+                        <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-600">{record.cars_washed}</td>
+                        <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-600">
+                          {typeof record.appointment_details === "object"
+                            ? `${record.appointment_details.car_name} - ${record.appointment_details.wash_type}`
+                            : record.appointment_details}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
         </div>
       </div>
-    </ExternEmployeeLayout>
+    </InternEmployeeLayout>
   )
 }
-

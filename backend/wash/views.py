@@ -304,6 +304,32 @@ def update_extern_employee_profile(request):
             
     except ExternEmployee.DoesNotExist:
         return Response({"error": "الموظف غير موجود"}, status=status.HTTP_404_NOT_FOUND)
+    
+@api_view(['GET', 'PUT'])
+@authentication_classes([CustomJWTAuthentication])
+@permission_classes([IsAuthenticated])
+def update_intern_employee_profile(request):
+    """
+    Get or update the currently authenticated internal employee's profile
+    """
+    try:
+        # Get the current internal employee
+        employee = InternEmployee.objects.get(id=request.user.id)
+        
+        if request.method == 'GET':
+            serializer = InternEmployeeDetailSerializer(employee)
+            return Response(serializer.data)
+        
+        elif request.method == 'PUT':
+            # Use partial=True to allow partial updates
+            serializer = InternEmployeeSerializer(employee, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({"message": "تم تحديث البيانات بنجاح", "data": serializer.data})
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
+    except InternEmployee.DoesNotExist:
+        return Response({"error": "الموظف غير موجود"}, status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET', 'PUT', 'DELETE'])
 @authentication_classes([CustomJWTAuthentication])
@@ -379,46 +405,32 @@ def claim_appointment(request, appointment_id):
         )
 
 # Get and create appointments for extern employee
-@api_view(['GET', 'POST'])
+@api_view(['GET'])
 @authentication_classes([CustomJWTAuthentication])
 @permission_classes([IsAuthenticated, IsExternEmployee])
 def extern_employee_appointments(request):
     """
-    Get all appointments for an extern employee or create a new one
+    Get all appointments for an extern employee
     """
     if request.method == 'GET':
         appointments = AppointmentDomicile.objects.filter(extern_employee=request.user.id)
         serializer = AppointmentDomicileSerializer(appointments, many=True)
         return Response(serializer.data)
-    
-    elif request.method == 'POST':
-        serializer = CreateAppointmentDomicileSerializer(data=request.data)
-        if serializer.is_valid():
-            # Set the extern employee as the current user
-            serializer.validated_data['extern_employee'] = ExternEmployee.objects.get(id=request.user.id)
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 # Get and create appointments for intern employee
-@api_view(['GET', 'POST'])
+@api_view(['GET'])
 @authentication_classes([CustomJWTAuthentication])
 @permission_classes([IsAuthenticated, IsInternEmployee])
 def intern_employee_appointments(request):
     """
-    Get all appointments for an intern employee or create a new one
+    Get all appointments for an intern employee 
     """
     if request.method == 'GET':
         appointments = AppointmentLocation.objects.all()
         serializer = AppointmentLocationSerializer(appointments, many=True)
         return Response(serializer.data)
     
-    elif request.method == 'POST':
-        serializer = CreateAppointmentLocationSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # Get client information for an appointment domicile
 @api_view(['GET'])

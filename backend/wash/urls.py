@@ -35,6 +35,7 @@ from .views import (
     get_pending_appointments,
     claim_appointment,
     update_extern_employee_profile,
+    update_intern_employee_profile,
     get_extern_employee_public_details,
     delete_feedback
 )
@@ -78,6 +79,7 @@ urlpatterns = [
     path('extern_employee/appointments/', extern_employee_appointments, name='extern_employee_appointments'),
     path('intern_employee/appointments/', intern_employee_appointments, name='intern_employee_appointments'),
     path('extern_employee/profile/', update_extern_employee_profile, name='update_extern_employee_profile'),
+    path('intern_employee/profile/', update_intern_employee_profile, name='update_intern_employee_profile'),
     
     # Client information for appointments
    #  path('appointment_domicile/<int:appointment_id>/client/', get_client_for_appointment_domicile, name='get_client_for_appointment_domicile'),

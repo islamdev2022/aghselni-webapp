@@ -11,7 +11,9 @@ const LandingPage = lazy(() => import("./components/pages/LandingPage"));
 const ExternEmp = lazy(() => import("./components/pages/extern-employee/dashboard"));
 const ExternEmpProfile = lazy(() => import("./components/pages/extern-employee/profile"));
 const ExtEmpHistory = lazy(() => import("./components/pages/extern-employee/ExtEmpHistory"));
-const InternEmp = lazy(() => import("./components/pages/InternEmp"));
+const InternEmp = lazy(() => import("./components/pages/intern-employee/dashboard"));
+const InternEmpProfile = lazy(() => import("./components/pages/intern-employee/profile"));
+const Emphistory = lazy(() => import("./components/intern-employee/ClientHistory"));
 const Admin = lazy(() => import("./components/pages/dashboard"));
 const Profile = lazy(() => import("./components/Profile"));
 const ClientHistory = lazy (() => import("./components/ClientHistory"));
@@ -185,8 +187,9 @@ function App() {
                 
                 {/* Internal Employee Routes */}
                 <Route element={<ProtectedRoute userType="intern_employee" />}>
-                  <Route path="/intern-employee" element={<InternEmp />} />
-                  <Route path="/profile/intern_employee/:id" element={<Profile />} />
+                  <Route path="/intern_employee" element={<InternEmp />} />
+                  <Route path="/intern_employee/profile" element={<InternEmpProfile />} />
+                  <Route path="/intern_employee/history" element={<Emphistory />} />
                 </Route>
                 
                 {/* Admin Routes */}
