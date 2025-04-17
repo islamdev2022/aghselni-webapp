@@ -34,7 +34,9 @@ from .views import (
     feedback_summary,
     get_pending_appointments,
     claim_appointment,
-    update_extern_employee_profile
+    update_extern_employee_profile,
+    get_extern_employee_public_details,
+    delete_feedback
 )
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
@@ -107,6 +109,7 @@ urlpatterns = [
     #get all feedbacks by admin and approve feedback by admin
     path('admin/feedbacks/', get_admin_feedbacks, name='admin_feedbacks'),
     path('admin/feedbacks/<int:pk>/approve/', approve_feedback, name='approve_feedback'),
+    path('admin/feedbacks/<int:pk>/delete/', delete_feedback, name='delete_feedback'),
     path('admin/feedbacks/summary/', feedback_summary, name='feedback-summary'),
     # client modify his informations
     path('client/profile/', update_client_profile, name='update_client_profile'),
@@ -114,4 +117,6 @@ urlpatterns = [
     # feedback  
     path('feedback/',create_feedback, name='create_feedback'),
     path('feedback/all/',get_client_feedbacks, name='client_feedbacks'),
-]
+    
+    path('extern_employee/<int:employee_id>/', get_extern_employee_public_details),
+    ]

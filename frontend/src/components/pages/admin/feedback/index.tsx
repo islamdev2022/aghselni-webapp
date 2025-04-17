@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { MessageSquare, Search, Star,  CheckCircle, AlertCircle,  User, Calendar, X } from 'lucide-react';
 import { format } from 'date-fns';
 import AdminLayout from '@/components/layouts/AdminLayout';
-import { Feedback , useGetFeedbacks, useUpdateFeedback } from '@/hooks';
+import { Feedback , useGetFeedbacks, useUpdateFeedback,useDeleteFeedback } from '@/hooks';
 
 export default function FeedbackPage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -19,6 +19,16 @@ export default function FeedbackPage() {
   setShowDetailModal,
   updateStatusMutation} = useUpdateFeedback()
 
+  const {deleteMutation,
+    feedbackIdToDelete,
+    setFeedbackIdToDelete} = useDeleteFeedback()
+  const handleConfirmDelete = () => {
+    if (feedbackIdToDelete) {
+      deleteMutation.mutate(feedbackIdToDelete);
+    }
+    setShowDetailModal(false);
+    setFeedbackIdToDelete(null);
+  }
 
   const displayFeedback = feedbackData || [];
 
@@ -37,11 +47,15 @@ const filteredFeedback: Feedback[] = displayFeedback.filter((feedback: Feedback)
   const handleViewFeedback = (feedback: Feedback) => {
     setSelectedFeedback(feedback);
     setShowDetailModal(true);
+    setFeedbackIdToDelete(feedback.id);
   };
 
   const handleUpdateStatus = (id: number, approved: boolean) => {
     updateStatusMutation.mutate({ id, approved });
   };
+
+    
+
 
   const getStatusBadge = (status: boolean) => {
     switch (status) {
@@ -217,7 +231,6 @@ const filteredFeedback: Feedback[] = displayFeedback.filter((feedback: Feedback)
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="w-full max-w-2xl rounded-lg bg-white p-6 shadow-xl">
             <div className="mb-4 flex items-center justify-between">
-              {/* <h3 className="text-lg font-bold text-gray-900">{selectedFeedback.subject}</h3> */}
               <button 
                 onClick={() => setShowDetailModal(false)}
                 className="rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-500"
@@ -270,6 +283,16 @@ const filteredFeedback: Feedback[] = displayFeedback.filter((feedback: Feedback)
                   </button>
                 ) : <p className="flex items-center rounded-lg bg-green-50 px-3 py-1.5 text-xs font-medium text-green-700 hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1"
                 >Already Approved</p> }
+
+                <button
+                  onClick={() => handleConfirmDelete()}
+                  disabled={deleteMutation.isPending}
+                  className="flex items-center rounded-lg bg-red-50 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1"
+                >
+                  <X className="mr-1 h-3.5 w-3.5" />
+                  Delete
+                </button>
+                
 
                 <button
                   onClick={() => setShowDetailModal(false)}

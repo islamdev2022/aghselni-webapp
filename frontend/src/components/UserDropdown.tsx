@@ -51,6 +51,7 @@ const UserDropdown: React.FC<UserDropdownProps> = ({
                     )}`
               }`}
               alt="Profile Image"
+              className="w-full h-full rounded-full object-cover"
             />
           </div>
         </div>

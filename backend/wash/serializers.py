@@ -147,7 +147,7 @@ class AppointmentDomicileWithClientSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = AppointmentDomicile
-        fields = ['id', 'time', 'car_type', 'car_name', 'wash_type', 'place', 'price', 'status', 'client_info']
+        fields = ['id', 'time', 'car_type', 'car_name', 'wash_type', 'place', 'price', 'status', 'client_info','extern_employee']
 
 # Appointment Location serializer with client information
 class AppointmentLocationWithClientSerializer(serializers.ModelSerializer):

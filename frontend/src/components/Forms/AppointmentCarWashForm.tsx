@@ -163,6 +163,8 @@ export default function AppointmentCarWashForm() {
             <AlertTitle className="text-green-800">Booking Confirmed!</AlertTitle>
             <AlertDescription className="text-green-700">
               Your car wash appointment has been scheduled successfully. You will receive a confirmation shortly.
+              <br />
+              You can see the details in <Link to="/history" className=" underline">Click Here</Link>
             </AlertDescription>
           </Alert>
         )}

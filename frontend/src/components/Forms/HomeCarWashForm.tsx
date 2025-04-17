@@ -1,5 +1,3 @@
-"use client"
-
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -160,6 +158,8 @@ export default function HomeCarWashForm() {
             <AlertTitle className="text-green-800">Booking Confirmed!</AlertTitle>
             <AlertDescription className="text-green-700">
               Your car wash appointment has been scheduled successfully. You will receive a confirmation call shortly.
+              <br />
+              You can see the details in <Link to="/history" className=" underline">Click Here</Link>
             </AlertDescription>
           </Alert>
         )}

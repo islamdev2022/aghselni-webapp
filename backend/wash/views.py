@@ -617,7 +617,7 @@ def get_all_clients(request):
 # Get, delete a client
 @api_view(['GET', 'DELETE'])
 @authentication_classes([CustomJWTAuthentication])
-@permission_classes([IsAuthenticated, IsAdmin,IsClient])
+@permission_classes([IsAuthenticated,])
 def get_delete_client(request, pk):
     """
     Get or delete a client - admin only
@@ -912,12 +912,9 @@ def create_feedback(request):
 @authentication_classes([CustomJWTAuthentication])
 @permission_classes([IsAuthenticated, IsAdmin])
 def approve_feedback(request, pk):
-    print('trying to update the status')
-    print('Request data:', request.data)
     
     try:
         feedback = Feedback.objects.get(pk=pk)
-        print('Current approval status:', feedback.approved)
     except Feedback.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
     
@@ -925,13 +922,22 @@ def approve_feedback(request, pk):
     serializer = FeedbackSerializer(feedback, data=data, partial=True)
     
     if serializer.is_valid():
-        print('Serializer is valid, updating approval status')
         serializer.save()
-        print('New approval status:', feedback.approved)
         return Response(serializer.data)
     else:
         print('Serializer errors:', serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['DELETE'])
+@authentication_classes([CustomJWTAuthentication])
+@permission_classes([IsAuthenticated, IsAdmin])
+def delete_feedback(req, pk):
+    try:
+        feedback = Feedback.objects.get(pk=pk)
+        feedback.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    except Feedback.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET'])
 @authentication_classes([CustomJWTAuthentication])
@@ -1003,3 +1009,27 @@ def feedback_summary(request):
             {"error": "Failed to generate feedback summary"}, 
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+        
+# Get public extern employee details by ID (for clients)
+@api_view(['GET'])
+@authentication_classes([CustomJWTAuthentication])
+@permission_classes([IsAuthenticated, IsClient])
+def get_extern_employee_public_details(request, employee_id):
+    """
+    Allow a client to retrieve public details (full_name, phone, final_rating)
+    of an extern employee using their ID.
+    """
+    try:
+        extern_employee = ExternEmployee.objects.get(id=employee_id)
+
+        # Only return selected fields
+        public_data = {
+            "full_name": extern_employee.full_name,
+            "phone": extern_employee.phone,
+            "final_rating": extern_employee.final_rating
+        }
+
+        return Response(public_data)
+    
+    except ExternEmployee.DoesNotExist:
+        return Response({"error": "الموظف غير موجود"}, status=status.HTTP_404_NOT_FOUND)

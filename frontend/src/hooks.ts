@@ -423,6 +423,30 @@ export function useGetFeedbacksSummary(){
     },
   })
 }
+export function useDeleteFeedback() {
+  const queryClient = useQueryClient();
+  const [feedbackIdToDelete, setFeedbackIdToDelete] = useState<number | null>(null);
+  
+  const deleteMutation = useMutation({
+    mutationFn: async (feedbackId: number) => {
+      await api.delete(`/api/admin/feedbacks/${feedbackId}/delete/`);
+    },
+    onSuccess: () => {
+      // Invalidate the feedback query to refresh the data
+      queryClient.invalidateQueries({ queryKey: ["admin-feedbacks"] });
+      setFeedbackIdToDelete(null);
+    },
+    onError: (error) => {
+      console.error("Error deleting feedback:", error);
+    }
+  });
+
+  return {
+    deleteMutation,
+    feedbackIdToDelete,
+    setFeedbackIdToDelete
+  };
+}
   export function useUpdateFeedback() {
     // Get the query client from the hook
     const queryClient = useQueryClient();
@@ -667,4 +691,55 @@ export function useServicesDomiciel(timeRange: string) {
       },
       refetchOnWindowFocus: false
   });
+}
+
+//// CLIENT FUNCTIONS 
+interface ClientInfo {
+  id: number
+  full_name: string
+  email: string
+  phone: string
+  age: number
+  photo: string
+}
+
+interface Appointment {
+  id: number
+  time: string
+  car_type: string
+  car_name: string
+  wash_type: string
+  place: string
+  price: string
+  status: string
+  client_info: ClientInfo
+  type?: "domicile" | "location" // Added to distinguish between appointment types
+}
+export function useGetDomicielAppointmentsClient () {
+  return useQuery({
+    queryKey: ["client-domicile-appointments"],
+    queryFn: async () => {
+      const response = await api.get<Appointment[]>("/api/appointments_domicile/get")
+      return response.data
+    },
+  })
+}
+export function useGetInternAppointmentsClient () {
+  return useQuery({
+    queryKey: ["client-intern-appointments"],
+    queryFn: async () => {
+      const response = await api.get<Appointment[]>("/api/appointments_location/get")
+      return response.data
+    },
+  })
+}
+
+export function useGetExternEmployeePublic (id : number){
+  return useQuery({
+    queryKey: ["extern-employee-public", id],
+    queryFn: async () => {
+      const response = await api.get(`/api/extern_employee/${id}/`)
+      return response.data
+    },
+  })
 }
