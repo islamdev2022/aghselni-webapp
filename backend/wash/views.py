@@ -934,8 +934,8 @@ def approve_feedback(request, pk):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
-# @authentication_classes([CustomJWTAuthentication])
-# @permission_classes([IsAuthenticated, IsClient])
+@authentication_classes([CustomJWTAuthentication])
+@permission_classes([AllowAny])
 def get_client_feedbacks(request):
     """
     Clients can see all approved feedback from everyone

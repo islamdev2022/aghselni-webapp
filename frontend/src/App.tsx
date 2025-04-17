@@ -13,7 +13,8 @@ const ExternEmpProfile = lazy(() => import("./components/pages/extern-employee/p
 const ExtEmpHistory = lazy(() => import("./components/pages/extern-employee/ExtEmpHistory"));
 const InternEmp = lazy(() => import("./components/pages/InternEmp"));
 const Admin = lazy(() => import("./components/pages/dashboard"));
-import Profile from "./components/Profile";
+const Profile = lazy(() => import("./components/Profile"));
+const ClientHistory = lazy (() => import("./components/ClientHistory"));
 const Booking = lazy(() => import("./components/Booking"));
 const AppointmentCarWashForm = lazy(() => import("./components/Forms/AppointmentCarWashForm"));
 const HomeCarWashForm = lazy(() => import("./components/Forms/HomeCarWashForm"));
@@ -170,7 +171,7 @@ function App() {
                   <Route path="/booking/local" element={<AppointmentCarWashForm/>} />
                   <Route path="/booking/domicile" element={<HomeCarWashForm />} />
                   <Route path="/profile/client/:id" element={<Profile />} />
-                  <Route path="/history/:id" element={<p>Client History</p>} />
+                  <Route path="/history" element={<ClientHistory/>} />
                 
                 </Route>
                 

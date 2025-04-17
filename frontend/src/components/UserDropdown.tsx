@@ -83,6 +83,16 @@ const UserDropdown: React.FC<UserDropdownProps> = ({
 
           <DropdownMenu.Item className="outline-none" asChild>
             <div 
+              onClick={() => navigate("/history")}
+              className="flex items-center space-x-2 p-2 text-gray-700 hover:bg-slate-100 rounded cursor-pointer"
+            >
+              <Settings size={16} />
+              <span>History</span>
+            </div>
+          </DropdownMenu.Item>
+
+          <DropdownMenu.Item className="outline-none" asChild>
+            <div 
               onClick={handleLogout}
               className="flex items-center space-x-2 p-2 text-gray-700 hover:bg-slate-100 rounded cursor-pointer"
             >

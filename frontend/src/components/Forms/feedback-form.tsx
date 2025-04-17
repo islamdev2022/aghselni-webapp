@@ -157,7 +157,7 @@ export default function FeedbackForm() {
                 name="rating"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Rating (Optional)</FormLabel>
+                    <FormLabel>Rating</FormLabel>
                     <div className="flex space-x-1">
                       {[1, 2, 3, 4, 5].map((star) => (
                         <button
