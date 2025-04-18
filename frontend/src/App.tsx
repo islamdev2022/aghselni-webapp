@@ -20,6 +20,7 @@ const ClientHistory = lazy (() => import("./components/ClientHistory"));
 const Booking = lazy(() => import("./components/Booking"));
 const AppointmentCarWashForm = lazy(() => import("./components/Forms/AppointmentCarWashForm"));
 const HomeCarWashForm = lazy(() => import("./components/Forms/HomeCarWashForm"));
+const PaymentPage = lazy(() => import("./components/Forms/payment-page"));
 const Login = lazy(() => import("./components/Login"));
 const Signup = lazy(() => import("./components/SignUp"));
 const NotFound = lazy(() => import("./NotFound"));
@@ -172,6 +173,7 @@ function App() {
                   <Route path="/booking" element={<Booking />} />
                   <Route path="/booking/local" element={<AppointmentCarWashForm/>} />
                   <Route path="/booking/domicile" element={<HomeCarWashForm />} />
+                  <Route path="/booking/payment" element={<PaymentPage />} />
                   <Route path="/profile/client/:id" element={<Profile />} />
                   <Route path="/history" element={<ClientHistory/>} />
                 
