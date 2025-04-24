@@ -32,6 +32,7 @@ const AppointmentsTable = lazy(() => import("./components/admin/AppointmentsTabl
 const FeedbackPage = lazy(() => import("./components/pages/admin/feedback/index"));
 const Settings = lazy(() => import("./components/pages/admin/settings/index"));
 import Loading from "./loading";
+import AuthSuccess from "./components/AuthSuccess";
 // Loading fallback component
 const LoadingFallback = () => (
   <Loading/>
@@ -40,7 +41,7 @@ const LoadingFallback = () => (
 // Layout component that conditionally renders Navbar and Footer
 const Layout = ({ children }: { children: ReactNode }) => {
   const location = useLocation();
-  const authRoutes = ["/login/client", "/login/admin", "/login/extern_employee", "/login/intern_employee", "/signup" ,"/admin" ,"/extern_employee" ,"/intern_employee","/booking/local","/booking/domicile" ];
+  const authRoutes = ["/login/client", "/login/admin", "/login/extern_employee", "/login/intern_employee", "/signup","/auth/success" ,"/admin" ,"/extern_employee" ,"/intern_employee","/booking/local","/booking/domicile" ];
   
   // Check if current path starts with any auth route
   const isAuthRoute = authRoutes.some(route => 
@@ -165,7 +166,7 @@ function App() {
                 <Route path="/" element={<LandingPage />} />
                 <Route path="/login/:userType" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
-                
+                <Route path="/auth/success" element={<AuthSuccess />} />
                 {/* Client Routes */}
                 
                 <Route element={<ProtectedRoute userType="client" />}>

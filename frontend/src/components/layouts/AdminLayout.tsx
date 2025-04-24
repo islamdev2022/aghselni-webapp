@@ -156,8 +156,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   return (
     <DashboardLayout
       navItems={navItems}
-      appLogo={<Car className="h-5 w-5 text-white" />}
-      appName="Aghselni"
       userData={userData}
       isLoading={isLoading}
       error={error}

@@ -2,7 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { LogOut, Settings } from "lucide-react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
-
+import { User } from "lucide-react";
 interface UserDropdownProps {
   userData: {
     id: number;
@@ -34,8 +34,8 @@ const UserDropdown: React.FC<UserDropdownProps> = ({
       <DropdownMenu.Trigger asChild>
         <div className="flex items-center h-10 w-10 rounded-full bg-cyan-600 text-white cursor-pointer hover:bg-cyan-700">
           <div className="flex items-center justify-center w-full h-full font-semibold text-xl">
-            {/* <User size={18} /> */}
-            <img
+            {
+              userData?.photo ?  <img
               src={`${
                 userData?.photo
                   ? `http://127.0.0.1:8000/${userData?.photo}`
@@ -52,7 +52,10 @@ const UserDropdown: React.FC<UserDropdownProps> = ({
               }`}
               alt="Profile Image"
               className="w-full h-full rounded-full object-cover"
-            />
+            /> : <User size={18} />
+
+            }
+           
           </div>
         </div>
       </DropdownMenu.Trigger>

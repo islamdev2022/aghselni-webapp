@@ -15,8 +15,6 @@ interface NavItem {
 interface DashboardLayoutProps {
   children: React.ReactNode
   navItems: NavItem[]
-  appLogo: React.ReactNode
-  appName: string
   userData: {
     full_name?: string
     email?: string
@@ -30,8 +28,6 @@ interface DashboardLayoutProps {
 export default function DashboardLayout({
   children,
   navItems,
-  appLogo,
-  appName,
   userData,
   isLoading = false,
   error = null,
@@ -74,10 +70,7 @@ export default function DashboardLayout({
           {/* Sidebar header */}
           <div className="flex h-16 items-center justify-between border-b px-4">
             <Link to="/" className="flex items-center">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-cyan-600 to-cyan-500">
-                {appLogo}
-              </div>
-              <span className="ml-2 text-xl font-bold text-gray-800">{appName}</span>
+            <img src="/Logo.png" alt="" className='w-28 '/>
             </Link>
             <button className="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 lg:hidden" onClick={toggleSidebar}>
               <X className="h-5 w-5" />

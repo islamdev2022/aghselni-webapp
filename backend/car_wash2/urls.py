@@ -9,7 +9,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
   
     path("api/", include("wash.urls")),
-    
+    path("api/auth/", include("social_django.urls", namespace="social")),
 
 ]
 

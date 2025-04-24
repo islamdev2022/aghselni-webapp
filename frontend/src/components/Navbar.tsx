@@ -211,8 +211,7 @@ const Navbar = () => {
       <div className="container mx-auto px-4 py-4">
         <nav className="flex items-center justify-between">
           <Link to="/" className="flex items-center" onClick={scrollUp}>
-            <span className="text-3xl mr-2">💧</span>
-            <span className="text-cyan-600 font-bold text-xl">Aghselni</span>
+            <img src="/Logo.png" alt="" className='w-28 '/>
           </Link>
 
           {/* Desktop Navigation */}

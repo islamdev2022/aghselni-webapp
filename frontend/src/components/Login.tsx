@@ -5,11 +5,13 @@ import type React from "react"
 import { useState } from "react"
 import { useNavigate, Link } from "react-router-dom"
 import { useMutation } from "@tanstack/react-query"
-import api from "../api"
+import api from "@/api"
 import { ACCESS_TOKEN, REFRESH_TOKEN } from "../constants"
 import { Button } from "./ui/button"
 import { AtSign, Lock, LogIn } from "lucide-react"
 import { useParams } from "react-router-dom";
+
+import GoogleAuthButton from "./GoogleAuthButton"
 interface LoginFormData {
   email: string
   password: string
@@ -56,11 +58,11 @@ console.log(userType)
         navigate("/admin")
       }
     },
-    onError: (error) => {
-      console.error("Login error:", error)
+    onError: (error: any) => {
+      console.error("Login error:", error.response?.data.error)
       setErrors({
-        email: "Invalid email or password",
-        password: "Invalid email or password",
+        email: error.response?.data.error,
+        password: error.response?.data.error,
       })
     },
   })
@@ -118,9 +120,12 @@ console.log(userType)
             </div>
           </div>
           <h1 className="text-center text-2xl font-bold">
-          Hello {userType?.toLocaleUpperCase()} <br /> Welcome back to <span className="font-extrabold">Aghselni</span>
+            Hello {userType?.toLocaleUpperCase()} <br /> Welcome back to{" "}
+            <span className="font-extrabold">Aghselni</span>
           </h1>
-          <p className="mt-1 text-center text-cyan-100">Log in to your account</p>
+          <p className="mt-1 text-center text-cyan-100">
+            Log in to your account
+          </p>
         </div>
 
         <div className="px-8 pt-12 pb-8">
@@ -137,7 +142,10 @@ console.log(userType)
 
           <form className="space-y-5">
             <div className="relative">
-              <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="email"
+                className="mb-1.5 block text-sm font-medium text-gray-700"
+              >
                 Email Address
               </label>
               <div className="relative">
@@ -151,15 +159,24 @@ console.log(userType)
                   id="email"
                   placeholder="you@example.com"
                   className={`w-full rounded-lg border ${
-                    errors.email ? "border-red-300 bg-red-50" : "border-gray-200"
+                    errors.email
+                      ? "border-red-300 bg-red-50"
+                      : "border-gray-200"
                   } py-2.5 pl-10 pr-3 text-sm shadow-sm transition focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500`}
                 />
               </div>
-              {errors.email && <p className="mt-1.5 text-xs font-medium text-red-500">{errors.email}</p>}
+              {errors.email && (
+                <p className="mt-1.5 text-xs font-medium text-red-500">
+                  {errors.email}
+                </p>
+              )}
             </div>
 
             <div className="relative">
-              <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="password"
+                className="mb-1.5 block text-sm font-medium text-gray-700"
+              >
                 Password
               </label>
               <div className="relative">
@@ -173,34 +190,31 @@ console.log(userType)
                   id="password"
                   placeholder="Enter your password"
                   className={`w-full rounded-lg border ${
-                    errors.password ? "border-red-300 bg-red-50" : "border-gray-200"
+                    errors.password
+                      ? "border-red-300 bg-red-50"
+                      : "border-gray-200"
                   } py-2.5 pl-10 pr-3 text-sm shadow-sm transition focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500`}
                 />
               </div>
-              {errors.password && <p className="mt-1.5 text-xs font-medium text-red-500">{errors.password}</p>}
+              {errors.password && (
+                <p className="mt-1.5 text-xs font-medium text-red-500">
+                  {errors.password}
+                </p>
+              )}
             </div>
 
             <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <input
-                  id="remember-me"
-                  name="remember-me"
-                  type="checkbox"
-                  className="h-4 w-4 rounded border-gray-300 text-cyan-600 focus:ring-cyan-500"
-                />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-600">
-                  Remember me
-                </label>
-              </div>
-
               <div className="text-sm">
-                <a href="#" className="font-medium text-cyan-600 hover:text-cyan-500">
+                <a
+                  href="#"
+                  className="font-medium text-cyan-600 hover:text-cyan-500"
+                >
                   Forgot password?
                 </a>
               </div>
             </div>
 
-            <div className="pt-2">
+            <div className="pt-2 flex flex-col gap-4">
               <Button
                 type="submit"
                 className=" cursor-pointer w-full rounded-lg bg-gradient-to-r from-cyan-600 to-cyan-500 py-2.5 text-sm font-medium text-white shadow-md transition hover:from-cyan-700 hover:to-cyan-600 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 disabled:opacity-70"
@@ -209,7 +223,10 @@ console.log(userType)
               >
                 {loginMutation.isPending ? (
                   <span className="flex items-center justify-center">
-                    <svg className="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24">
+                    <svg
+                      className="mr-2 h-4 w-4 animate-spin"
+                      viewBox="0 0 24 24"
+                    >
                       <circle
                         className="opacity-25"
                         cx="12"
@@ -231,13 +248,22 @@ console.log(userType)
                   "Sign In"
                 )}
               </Button>
+             
+              <GoogleAuthButton
+                className="w-full"
+                redirectUrl="http://localhost:8000/api/auth/login/google-oauth2/?next=/api/token/"
+                mode="in"
+              />
             </div>
           </form>
 
           <div className="mt-8 text-center">
             <p className="text-sm text-gray-600">
               Don&apos;t have an account yet?{" "}
-              <Link to="/signup" className="font-medium text-cyan-600 transition hover:text-cyan-700">
+              <Link
+                to="/signup"
+                className="font-medium text-cyan-600 transition hover:text-cyan-700"
+              >
                 Sign up for free!
               </Link>
             </p>
@@ -245,7 +271,7 @@ console.log(userType)
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 export default Login

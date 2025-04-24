@@ -1,4 +1,4 @@
-import { Car, LayoutDashboard, User, Clock, CheckCircle } from "lucide-react"
+import { LayoutDashboard, User, Clock, CheckCircle } from "lucide-react"
 import { useQuery } from "@tanstack/react-query"
 import api from "@/api"
 import { useQueryClient } from "@tanstack/react-query"
@@ -76,8 +76,6 @@ export default function ExternEmployeeLayout({ children }: ExternEmployeeLayoutP
   return (
     <DashboardLayout
       navItems={navItems}
-      appLogo={<Car className="h-5 w-5 text-white" />}
-      appName="Aghselni"
       userData={userData ?? null}
       isLoading={isLoading}
       error={errorMessage}

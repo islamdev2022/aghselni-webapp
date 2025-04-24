@@ -953,7 +953,7 @@ def delete_feedback(req, pk):
 
 @api_view(['GET'])
 @authentication_classes([CustomJWTAuthentication])
-@permission_classes([AllowAny])
+@authentication_classes([AllowAny])
 def get_client_feedbacks(request):
     """
     Clients can see all approved feedback from everyone
@@ -1045,3 +1045,36 @@ def get_extern_employee_public_details(request, employee_id):
     
     except ExternEmployee.DoesNotExist:
         return Response({"error": "الموظف غير موجود"}, status=status.HTTP_404_NOT_FOUND)
+
+
+## CREATE GOOGLE AUTH 
+
+from django.shortcuts import redirect
+import urllib.parse
+import json
+from rest_framework_simplejwt.tokens import RefreshToken
+
+@csrf_exempt
+def exchange_token(request):
+    """Exchange social auth session for JWT tokens and redirect to frontend"""
+    if request.user.is_authenticated:
+        refresh = RefreshToken.for_user(request.user)
+        tokens = {
+            'access_token': str(refresh.access_token),
+            'refresh_token': str(refresh),
+             'user_id': request.user.id,
+            'is_new_user': request.session.get('social_auth_is_new', False)  # This helps distinguish new vs returning users
+        }
+          # Clear the session flag
+        if 'social_auth_is_new' in request.session:
+            del request.session['social_auth_is_new']
+        # Construct frontend URL with tokens as query parameters
+        frontend_url = "http://localhost:5173/auth/success"  # Change to your actual frontend URL
+        query_params = urllib.parse.urlencode(tokens)
+        redirect_url = f"{frontend_url}?{query_params}"
+        
+        return redirect(redirect_url)
+    
+    # On failure, redirect to frontend error page
+    error_params = urllib.parse.urlencode({'error': 'Authentication failed'})
+    return redirect("http://localhost:5173/auth/error?{error_params}")

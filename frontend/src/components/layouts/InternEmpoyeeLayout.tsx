@@ -1,9 +1,7 @@
-"use client"
-
 import type React from "react"
 import { useState } from "react"
 import { Link, useLocation } from "react-router-dom"
-import { LayoutDashboard, Calendar, LogOut, Menu, X, Car, User, Clock } from "lucide-react"
+import { LayoutDashboard, Calendar, LogOut, Menu, X, User, Clock } from "lucide-react"
 import {useGetUserData} from "@/hooks"
 
 interface InternEmployeeLayoutProps {
@@ -75,10 +73,7 @@ export default function InternEmployeeLayout({ children }: InternEmployeeLayoutP
           {/* Sidebar header */}
           <div className="flex h-16 items-center justify-between border-b px-4">
             <Link to="/intern-employee" className="flex items-center">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-cyan-600 to-cyan-500">
-                <Car className="h-5 w-5 text-white" />
-              </div>
-              <span className="ml-2 text-xl font-bold text-gray-800">Aghselni</span>
+            <img src="/Logo.png" alt="" className='w-28 '/>
             </Link>
             <button className="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 lg:hidden" onClick={toggleSidebar}>
               <X className="h-5 w-5" />

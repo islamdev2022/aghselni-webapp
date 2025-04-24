@@ -37,7 +37,8 @@ from .views import (
     update_extern_employee_profile,
     update_intern_employee_profile,
     get_extern_employee_public_details,
-    delete_feedback
+    delete_feedback,
+    exchange_token
 )
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
@@ -121,4 +122,6 @@ urlpatterns = [
     path('feedback/all/',get_client_feedbacks, name='client_feedbacks'),
     
     path('extern_employee/<int:employee_id>/', get_extern_employee_public_details),
+    
+path('token/', exchange_token, name='token_exchange'),
     ]
