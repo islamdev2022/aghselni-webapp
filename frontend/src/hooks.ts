@@ -104,9 +104,14 @@ export function useClaimAppointment(queryClient: QueryClient) {
     })
 }
 
+interface StatusUpdatePayload {
+  id: number;
+  status: string;
+}
+
 export function useUpdateAppointmentStatus(queryClient: QueryClient, onSuccessCallback?: () => void) {
   return useMutation({
-    mutationFn: async ({ id, status } : Appointment) => {
+    mutationFn: async ({ id, status } : StatusUpdatePayload) => {
       const response = await api.put(`/api/appointments_domicile/${id}/`, { status })
       return response.data
     },
