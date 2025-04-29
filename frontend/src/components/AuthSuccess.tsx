@@ -2,35 +2,42 @@
 import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import RedirectComponent from './RedirectComponent'; // Adjust the import path as necessary
-
+import api from '../api'; // Adjust the import path as necessary
 
 const AuthSuccess = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const queryParams = new URLSearchParams(location.search);
-    const accessToken = queryParams.get('access_token');
-    const refreshToken = queryParams.get('refresh_token');
-    const isNewUser = queryParams.get('is_new_user') === 'True'; // Check if this is a new user
+  // Add this debugging code to your frontend after successful login
+useEffect(() => {
+  const queryParams = new URLSearchParams(location.search);
+  const accessToken = queryParams.get('access_token');
+  const refreshToken = queryParams.get('refresh_token');
+  
+  if (accessToken && refreshToken) {
+    // Store tokens
+    localStorage.setItem('access', accessToken);
+    localStorage.setItem('refresh', refreshToken);
     
-    if (accessToken && refreshToken) {
-      // Store tokens in localStorage or state management
-      localStorage.setItem('access', accessToken);
-      localStorage.setItem('refresh', refreshToken);
-      
-      // Show appropriate message based on whether this is registration or login
-      if (isNewUser) {
-        alert('Your account has been successfully created with Google!');
-      } else {
-        alert('Welcome back! Successfully signed in with Google!');
+    // Debug token
+    console.log('Access token stored:', accessToken);
+    
+    // Make a test request with the token
+    const testAuth = async () => {
+      try {
+        const response = await api.get('/api/client/profile/');
+        console.log('Auth test successful:', response.data);
+        // Optionally, you can redirect or perform other actions here
+        navigate('/'); // Redirect to home page or any other page
+      } catch (error: any) {
+        console.error('Auth test failed:', error.response?.status, error.response?.data);
+        navigate('/login/client'); // Redirect to login page if the test fails
       }
-      
-      navigate('/'); // Redirect to your main app page
-    } else {
-      navigate('/login'); // Redirect back to login if tokens are missing
-    }
-  }, [location, navigate]);
+    };
+    
+    testAuth();
+  }
+}, [location]);
 
   
 

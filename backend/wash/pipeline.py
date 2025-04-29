@@ -46,11 +46,42 @@ def create_or_get_client(backend, user, response, *args, **kwargs):
     
     email = user.email
     
+    # Extract additional information from the response
+    user_age = None
+    profile_image = None
+    
+    # For Google Auth
+    if backend.name == 'google-oauth2':
+        # Try to get birthday information (if available and permissions granted)
+        if 'birthday' in response:
+            from datetime import datetime, date
+            try:
+                birth_date = datetime.strptime(response['birthday'], '%Y-%m-%d').date()
+                today = date.today()
+                user_age = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
+            except (ValueError, TypeError):
+                user_age = 0
+        
+        # Get profile image
+        if 'picture' in response:
+            profile_image = response['picture']
+    
     # Check if a client with this email already exists
     try:
         client = Client.objects.get(email=email)
-        # Client exists, no need to create a new one
+        # Client exists, update any missing info if needed
         is_new = False
+        
+        # Optionally update existing profile with new information
+        if user_age and client.age == 0:
+            client.age = user_age
+        if profile_image and not client.photo:  # Assuming you have a profile_image field
+            client.photo = profile_image
+        
+        # Save if modifications were made
+        if user_age or profile_image:
+            client.save()
+            
     except Client.DoesNotExist:
         # Create a new client
         client = Client.objects.create(
@@ -58,7 +89,8 @@ def create_or_get_client(backend, user, response, *args, **kwargs):
             email=email,
             password=user.password,  # This is already hashed
             phone="",  # Placeholder
-            age=0,     # Placeholder
+            age=user_age or 0,  # Use retrieved age or default to 0
+            photo=profile_image or ""  # Use retrieved profile image or empty string
         )
         is_new = True
     

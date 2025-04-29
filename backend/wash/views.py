@@ -656,9 +656,10 @@ def update_client_profile(request):
     """
     Get or update the currently authenticated client's profile
     """
+    print(f"User authenticated as: {request.user}, ID: {request.user.id}")
     try:
         # Get the current client
-        client = Client.objects.get(id=request.user.id)
+        client = Client.objects.get(email=request.user.email)
         
         if request.method == 'GET':
             serializer = ClientDetailSerializer(client)
@@ -1058,18 +1059,40 @@ from rest_framework_simplejwt.tokens import RefreshToken
 def exchange_token(request):
     """Exchange social auth session for JWT tokens and redirect to frontend"""
     if request.user.is_authenticated:
-        refresh = RefreshToken.for_user(request.user)
+        print(f"User type: {type(request.user)}, ID: {request.user.id}")
+        
+        # Always use the Django User model for token generation
+        # This is what the JWT system expects
+        user = request.user
+        
+        # Generate token for the User (not the Client)
+        refresh = RefreshToken.for_user(user)
+        
+        # Add custom claims to help identify the user type and link to client
+        refresh['user_type'] = 'client'
+        refresh['email'] = user.email
+        
+        # Try to find the associated Client to add its ID
+        from wash.models import Client
+        try:
+            client = Client.objects.get(email=user.email)
+            refresh['client_id'] = client.id
+        except Client.DoesNotExist:
+            pass
+        
         tokens = {
             'access_token': str(refresh.access_token),
             'refresh_token': str(refresh),
-             'user_id': request.user.id,
-            'is_new_user': request.session.get('social_auth_is_new', False)  # This helps distinguish new vs returning users
+            'user_id': user.id,
+            'is_new_user': request.session.get('social_auth_is_new', False)
         }
-          # Clear the session flag
+        
+        # Clear the session flag
         if 'social_auth_is_new' in request.session:
             del request.session['social_auth_is_new']
+            
         # Construct frontend URL with tokens as query parameters
-        frontend_url = "http://localhost:5173/auth/success"  # Change to your actual frontend URL
+        frontend_url = "http://localhost:5173/auth/success"  
         query_params = urllib.parse.urlencode(tokens)
         redirect_url = f"{frontend_url}?{query_params}"
         
@@ -1077,4 +1100,4 @@ def exchange_token(request):
     
     # On failure, redirect to frontend error page
     error_params = urllib.parse.urlencode({'error': 'Authentication failed'})
-    return redirect("http://localhost:5173/auth/error?{error_params}")
+    return redirect(f"http://localhost:5173/auth/error?{error_params}")

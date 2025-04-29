@@ -248,12 +248,15 @@ console.log(userType)
                   "Sign In"
                 )}
               </Button>
-             
-              <GoogleAuthButton
+              {
+                userType === 'client' ? <GoogleAuthButton
                 className="w-full"
                 redirectUrl="http://localhost:8000/api/auth/login/google-oauth2/?next=/api/token/"
                 mode="in"
-              />
+              /> : <></>
+              }
+             
+              
             </div>
           </form>
 
