@@ -1,0 +1,20 @@
+version: "3.9"
+services:
+  backend:
+    build: ./backend
+    container_name: django-backend
+    expose:
+      - "8000"
+    networks:
+      - app-network
+
+  frontend:
+    build: ./frontend
+    container_name: react-frontend
+    expose:
+      - "80"
+    networks:
+      - app-network
+
+networks:
+  app-network:

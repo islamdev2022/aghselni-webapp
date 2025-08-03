@@ -6,6 +6,7 @@ import { useQuery, useMutation } from "@tanstack/react-query"
 import { Button } from "@/components/ui/button"
 import { AtSign, User, Phone, Calendar, Camera, Save,AlertTriangle, X, Check,Trash2 } from "lucide-react"
 import LoadingSkeleton from "@/LoadingSkeleton"
+import { IP_ADDRESS } from "@/constants"
 interface ProfileFormData {
   full_name: string
   age: number
@@ -118,7 +119,7 @@ const Profile = () => {
       })
 
       if (client.photo) {
-        setPhotoPreview(`http://127.0.0.1:8000/${client.photo}`)
+        setPhotoPreview(`http://${IP_ADDRESS}:8000/${client.photo}`)
       }
     }
   }, [client])
@@ -208,7 +209,7 @@ const Profile = () => {
       })
 
       if (client.photo) {
-        setPhotoPreview(`http://127.0.0.1:8000/${client.photo}`)
+        setPhotoPreview(`http://${IP_ADDRESS}:8000/${client.photo}`)
       } else {
         setPhotoPreview(null)
       }

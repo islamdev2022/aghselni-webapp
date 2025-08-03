@@ -12,12 +12,15 @@ export default defineConfig({
     },
   },
   server: {
+    host: true, // ← allows access from your local network
+    port: 5173, // ← or any other port you prefer
     proxy: {
       '/api': {
-        target: 'http://127.0.0.1:8000/', // Your backend URL
+        target: 'http://145.223.69.97:8000/',
         changeOrigin: true,
-        secure: false, 
+        secure: false,
       },
     },
   },
+  
 })

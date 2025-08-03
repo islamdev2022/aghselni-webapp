@@ -1,6 +1,8 @@
 export const ACCESS_TOKEN = "access";
 export const REFRESH_TOKEN = "refresh"
 
+export const IP_ADDRESS = "145.223.69.97"
+
 // This file contains sample card data for demonstration purposes
 
 export interface CardData {

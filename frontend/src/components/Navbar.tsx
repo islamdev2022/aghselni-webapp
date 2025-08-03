@@ -5,6 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import api from '../api';
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import UserDropdown from './UserDropdown';
+import { IP_ADDRESS } from '@/constants';
 // import { useClient } from '@/contexts/clientContext';
 // interface UserData {
 //   id: number
@@ -155,7 +156,7 @@ const Navbar = () => {
                 className='w-7'
               src={`${
                 client?.photo
-                  ? `http://127.0.0.1:8000/${client?.photo}`
+                  ? `http://${IP_ADDRESS}:8000/${client?.photo}`
                   : `${(
                       <div>
                         {client?.full_name?.indexOf(" ") !== -1
