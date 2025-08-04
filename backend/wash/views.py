@@ -1092,7 +1092,7 @@ def exchange_token(request):
             del request.session['social_auth_is_new']
             
         # Construct frontend URL with tokens as query parameters
-        frontend_url = "http://localhost:5173/auth/success"  
+        frontend_url = "http://145.223.69.97:5173/auth/success"  
         query_params = urllib.parse.urlencode(tokens)
         redirect_url = f"{frontend_url}?{query_params}"
         
@@ -1100,4 +1100,4 @@ def exchange_token(request):
     
     # On failure, redirect to frontend error page
     error_params = urllib.parse.urlencode({'error': 'Authentication failed'})
-    return redirect(f"http://localhost:5173/auth/error?{error_params}")
+    return redirect(f"http://145.223.69.97:5173/auth/error?{error_params}")

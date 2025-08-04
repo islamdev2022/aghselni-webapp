@@ -42,7 +42,7 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = config('Client_Secret', default='your-client-
 # LOGIN_REDIRECT_URL = '/'
 # LOGOUT_REDIRECT_URL = '/'
 
-SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI = 'http://localhost:8000/api/auth/complete/google-oauth2/'
+SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI = 'http://145.223.69.97:8000/api/auth/complete/google-oauth2/'
 
 # Disable state parameter for testing only (keep enabled in production)
 SOCIAL_AUTH_GOOGLE_OAUTH2_IGNORE_DEFAULT_SCOPE = True
@@ -197,6 +197,7 @@ SIMPLE_JWT = {
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",  # React Vite frontend
     "http://127.0.0.1:5173",
+    "http://145.223.69.97:5173"
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True

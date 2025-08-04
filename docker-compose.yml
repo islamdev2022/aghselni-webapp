@@ -8,6 +8,10 @@ services:
       - "8000"
     networks:
       - app-network
+    volumes:
+      - ./backend:/app
+      - db-data:/app/db.sqlite3
+
 
   frontend:
     build: ./frontend
