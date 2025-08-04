@@ -10,7 +10,7 @@ services:
       - app-network
     volumes:
       - ./backend:/app
-      - db-data:/app/db.sqlite3
+      - db-data:/app/data
 
 
   frontend:

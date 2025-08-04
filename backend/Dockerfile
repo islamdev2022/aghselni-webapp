@@ -41,7 +41,8 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 # Switch to the non-privileged user to run the application.
 USER root
 
-RUN chmod 664 /app/db.sqlite3 || true
+# Create data directory for database
+RUN mkdir -p /app/data && chmod 755 /app/data
 
 # Copy the source code into the container.
 COPY . .
