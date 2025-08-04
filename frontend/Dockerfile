@@ -29,8 +29,11 @@ RUN --mount=type=bind,source=package.json,target=package.json \
 # Copy the rest of the source files into the image.
 COPY . .
 
-# Expose the port that the application listens on.
-EXPOSE 5731
+# Build the application for production
+RUN npm run build
 
-# Run the application.
-CMD  ["npm", "start"]
+# Expose the port that the application listens on.
+EXPOSE 5173
+
+# Run the application in preview mode (serves the built files).
+CMD  ["npm", "run", "preview"]
